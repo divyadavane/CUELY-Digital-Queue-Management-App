@@ -1,0 +1,16 @@
+{
+  "name": "Cuely Queue Management",
+  "short_name": "Cuely",
+  "description": "Digital Queue Management App",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#171d2e",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "256x256",
+      "type": "image/x-icon"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+pandas
+scikit-learn
+lightgbm
+supabase
+onnxmltools
+onnxconverter-common
