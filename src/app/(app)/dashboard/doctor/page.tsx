@@ -5,15 +5,14 @@ import { redirect } from "next/navigation";
 export default async function DoctorQueuePage() {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [{ data: user }, { data: queues }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from("queues").select("*"),
+  ]);
 
   if (!user) {
     redirect("/login");
   }
-
-  const { data: queues } = await supabase.from("queues").select("*");
 
   return (
     <main className="min-h-screen bg-slate-950">

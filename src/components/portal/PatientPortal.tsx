@@ -10,6 +10,7 @@ import {
   LogOut,
   Star,
   User,
+  Video,
   Wallet,
 } from "lucide-react";
 import { clearPortalToken } from "@/lib/portal/client";
@@ -21,13 +22,15 @@ import { AppointmentsSection } from "@/components/portal/sections/AppointmentsSe
 import { VisitsSection } from "@/components/portal/sections/VisitsSection";
 import { RatingsSection } from "@/components/portal/sections/RatingsSection";
 import { BillingSection } from "@/components/portal/sections/BillingSection";
+import { ConsultationsSection } from "@/components/portal/sections/ConsultationsSection";
 import { ProfileSection } from "@/components/portal/sections/ProfileSection";
 
-type Tab = "dashboard" | "appointments" | "visits" | "ratings" | "billing" | "profile";
+type Tab = "dashboard" | "appointments" | "visits" | "consultations" | "ratings" | "billing" | "profile";
 
 const NAV_ITEMS: { key: Tab; labelKey: string; icon: React.ReactNode }[] = [
   { key: "dashboard", labelKey: "portal.nav.home", icon: <LayoutDashboard className="w-5 h-5" /> },
   { key: "appointments", labelKey: "portal.nav.appts", icon: <CalendarDays className="w-5 h-5" /> },
+  { key: "consultations", labelKey: "portal.nav.consultations", icon: <Video className="w-5 h-5" /> },
   { key: "visits", labelKey: "portal.nav.visits", icon: <History className="w-5 h-5" /> },
   { key: "ratings", labelKey: "portal.nav.ratings", icon: <Star className="w-5 h-5" /> },
   { key: "billing", labelKey: "portal.nav.billing", icon: <Wallet className="w-5 h-5" /> },
@@ -96,6 +99,7 @@ export function PatientPortal() {
           <DashboardSection patientName={profile.name} onNavigate={(t) => setTab(t as Tab)} />
         )}
         {tab === "appointments" && <AppointmentsSection />}
+        {tab === "consultations" && <ConsultationsSection />}
         {tab === "visits" && <VisitsSection />}
         {tab === "ratings" && <RatingsSection />}
         {tab === "billing" && <BillingSection />}
@@ -106,7 +110,7 @@ export function PatientPortal() {
 
       {/* Bottom navigation (mobile-first) */}
       <nav className="fixed bottom-0 inset-x-0 z-40 bg-[#0b101d]/95 backdrop-blur-xl border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
-        <div className="max-w-lg mx-auto grid grid-cols-6 px-2">
+        <div className="max-w-lg mx-auto grid grid-cols-7 px-2">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.key}

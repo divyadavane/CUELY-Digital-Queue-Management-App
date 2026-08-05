@@ -168,9 +168,12 @@ begin
 end; $function$;
 
 -- 2.2 Transition a consultation's lifecycle status
+-- When p_patient_phone is supplied, ownership is enforced (patient-only flow).
+-- Admin flows call without the phone (they are gated by is_admin_of_business).
 create or replace function public.set_consultation_status(
   p_consultation_id uuid,
-  p_status text
+  p_status text,
+  p_patient_phone text default null
 )
 returns jsonb language plpgsql security definer as $function$
 declare
@@ -178,6 +181,10 @@ declare
 begin
   select * into v_consultation from public.consultations where id = p_consultation_id;
   if not found then raise exception 'Consultation not found' using errcode = 'P0002'; end if;
+
+  if p_patient_phone is not null and v_consultation.patient_phone <> p_patient_phone then
+    raise exception 'Not authorized' using errcode = 'P0002';
+  end if;
 
   -- Allowed transitions
   if not (
@@ -249,10 +256,12 @@ begin
 end; $function$;
 
 -- 2.5 Rate a completed video consultation (one per consultation)
+-- p_patient_phone enforces that only the owning patient can rate.
 create or replace function public.submit_consultation_rating(
   p_consultation_id uuid,
   p_rating_value integer,
-  p_comment text default null
+  p_comment text default null,
+  p_patient_phone text default null
 )
 returns jsonb language plpgsql security definer as $function$
 declare
@@ -262,6 +271,9 @@ declare
 begin
   select * into v_consultation from public.consultations where id = p_consultation_id;
   if not found then raise exception 'Consultation not found' using errcode = 'P0002'; end if;
+  if p_patient_phone is not null and v_consultation.patient_phone <> p_patient_phone then
+    raise exception 'Not authorized' using errcode = 'P0002';
+  end if;
   if v_consultation.status <> 'completed' then
     raise exception 'You can only rate a completed consultation' using errcode = 'P0003';
   end if;

@@ -8,6 +8,7 @@ import { RatingStars } from "@/components/ui/RatingStars";
 import { TicketRow } from "./TicketRow";
 import { TransferTicketModal } from "./TransferTicketModal";
 import { AppointmentsPanel } from "./AppointmentsPanel";
+import { VideoConsultationsPanel } from "./VideoConsultationsPanel";
 import { BillInfo } from "./BillStatusBadge";
 import {
   Stethoscope,
@@ -374,6 +375,11 @@ export function DoctorQueueView({ queues }: DoctorQueueViewProps) {
           )}
         </div>
       </div>
+
+      {/* Video Consultations */}
+      {activeDoctor && (
+        <VideoConsultationsPanel queueId={activeDoctor.queueId} />
+      )}
 
       {/* Booked Appointments */}
       {activeDoctor && (

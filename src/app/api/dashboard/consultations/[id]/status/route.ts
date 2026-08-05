@@ -1,36 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPortalSession } from "@/lib/portal/session";
+import { getAdminUser, isAdminOfConsultation } from "@/lib/admin/guard";
 import { createServiceClient } from "@/lib/supabaseService";
 
 export const maxDuration = 10;
 
-// POST /api/portal/consultations/[id]/rate
-// body: { rating: 1-5, comment?: string }
+const ALLOWED = new Set(["ready", "in_call", "completed", "cancelled", "missed"]);
+
+// POST /api/dashboard/consultations/[id]/status
+// body: { status: "ready" | "in_call" | "completed" | "cancelled" | "missed" }
 export async function POST(
   req: NextRequest,
   ctx: { params: Promise<{ id: string }> }
 ) {
-  const session = await getPortalSession(req);
-  if (!session) {
+  const admin = await getAdminUser();
+  if (!admin) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+  const { id } = await ctx.params;
+  if (!(await isAdminOfConsultation(id))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   try {
-    const { id } = await ctx.params;
     const body = await req.json();
-    const rating = Number(body?.rating);
-    const comment = body?.comment ? String(body.comment) : null;
-
-    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-      return NextResponse.json({ error: "Rating must be between 1 and 5" }, { status: 400 });
+    const status = String(body?.status || "");
+    if (!ALLOWED.has(status)) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
     const supabase = createServiceClient();
-    const { data, error } = await supabase.rpc("submit_consultation_rating", {
+    const { data, error } = await supabase.rpc("set_consultation_status", {
       p_consultation_id: id,
-      p_rating_value: rating,
-      p_comment: comment || undefined,
-      p_patient_phone: session.phone,
+      p_status: status,
     });
 
     if (error) {
