@@ -51,6 +51,18 @@ function VideoTile({
   label?: string;
   compact?: boolean;
 }) {
+  useEffect(() => {
+    if (stream) {
+      console.debug("[video-debug] VideoTile render", {
+        label,
+        streamId: stream.id,
+        tracks: stream.getTracks().map((t) => `${t.kind}:${t.readyState}`),
+      });
+    } else {
+      console.debug("[video-debug] VideoTile render (no stream)", { label });
+    }
+  }, [stream, label]);
+
   return (
     <div className={`relative rounded-2xl overflow-hidden bg-black ${compact ? "" : "w-full h-full"}`}>
       {stream ? (
@@ -62,6 +74,8 @@ function VideoTile({
           autoPlay
           playsInline
           muted={muted}
+          onPlaying={() => console.debug("[video-debug] video playing", { label, streamId: stream.id })}
+          onError={(e) => console.debug("[video-debug] video error", { label, error: e.currentTarget.error })}
           className={`w-full h-full object-cover ${mirrored ? "-scale-x-100" : ""}`}
         />
       ) : (
@@ -259,7 +273,7 @@ export function CallView({
           <VideoTile stream={mainStream} label={mainLabel} muted={false} />
 
           {/* Side preview (self view) */}
-          <div className="absolute top-3 right-3 w-40 aspect-video rounded-xl overflow-hidden border border-white/10 shadow-xl z-10 hidden sm:block">
+          <div className="absolute top-3 right-3 w-56 aspect-video rounded-xl overflow-hidden border-2 border-blue-400 shadow-xl z-10 hidden sm:block">
             <VideoTile stream={sideStream} mirrored={sideMirrored} muted label={sideLabel} compact />
           </div>
 
@@ -288,7 +302,7 @@ export function CallView({
         </div>
 
         {/* Mobile self-view */}
-        <div className="sm:hidden absolute bottom-20 right-3 w-28 aspect-video rounded-xl overflow-hidden border border-white/10 shadow-xl z-10">
+        <div className="sm:hidden absolute bottom-20 right-3 w-40 aspect-video rounded-xl overflow-hidden border-2 border-blue-400 shadow-xl z-10">
           <VideoTile stream={sideStream} mirrored={sideMirrored} muted label={sideLabel} compact />
         </div>
 
@@ -386,6 +400,16 @@ export function CallView({
             </button>
           </div>
         )}
+      </div>
+
+      {/* TEMP debug bar */}
+      <div className="shrink-0 px-3 py-1 bg-slate-900 border-t border-white/10 text-[10px] font-mono text-emerald-300 flex flex-wrap gap-x-3 gap-y-0.5">
+        <span>role:{role}</span>
+        <span>pc:{connectionState}</span>
+        <span>joined:{String(joined)}</span>
+        <span>peers:{peers.length}</span>
+        <span>local:{localStream ? (localStream.getVideoTracks().some((t) => t.readyState === "live") ? "video:live" : "video:dead") : "none"}</span>
+        <span>remote:{remoteStream ? "yes" : "no"}</span>
       </div>
     </div>
   );

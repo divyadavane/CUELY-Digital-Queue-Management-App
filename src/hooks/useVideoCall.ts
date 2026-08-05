@@ -151,14 +151,17 @@ export function useVideoCall({
       initialStream &&
       initialStream.getTracks().some((t) => t.readyState === "live")
     ) {
+      console.debug("[video-debug] ensureLocalStream: using handoff stream", initialStream.id, initialStream.getTracks().map((t) => `${t.kind}:${t.readyState}`));
       localStreamRef.current = initialStream;
       setLocalStream(initialStream);
       return initialStream;
     }
+    console.debug("[video-debug] ensureLocalStream: no usable handoff, calling getUserMedia");
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
       audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
     });
+    console.debug("[video-debug] ensureLocalStream: fresh stream", stream.id, stream.getTracks().map((t) => `${t.kind}:${t.readyState}`));
     localStreamRef.current = stream;
     setLocalStream(stream);
     return stream;
@@ -299,6 +302,7 @@ export function useVideoCall({
       }
 
       const stream = await ensureLocalStream();
+      console.debug("[video-debug] join: local stream ready", stream.id, stream.getTracks().map((t) => `${t.kind}:${t.readyState}`));
       createPeerConnection(stream);
 
       const channel: RealtimeChannel = supabaseRef.current.channel(`video:${roomToken}`, {
