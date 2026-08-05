@@ -39,6 +39,7 @@ export interface Database {
           avg_rating: number
           total_ratings: number
           consultation_fee: number
+          video_enabled: boolean
           created_at: string
         }
       }
@@ -47,6 +48,7 @@ export interface Database {
           id: string
           queue_id: string
           ticket_id: string | null
+          consultation_id: string | null
           patient_name: string | null
           patient_phone: string | null
           rating_value: number
@@ -91,6 +93,7 @@ export interface Database {
           id: string
           business_id: string | null
           ticket_id: string | null
+          consultation_id: string | null
           patient_phone: string | null
           amount: number
           status: 'paid' | 'pending'
@@ -146,6 +149,62 @@ export interface Database {
           appointment_date: string
           appointment_time: string | null
           status: 'scheduled' | 'checked_in' | 'cancelled' | 'completed'
+          is_video: boolean
+          created_at: string
+        }
+      }
+      consultations: {
+        Row: {
+          id: string
+          business_id: string
+          queue_id: string
+          appointment_id: string | null
+          patient_id: string | null
+          patient_phone: string
+          patient_name: string | null
+          status: 'scheduled' | 'ready' | 'in_call' | 'completed' | 'cancelled' | 'missed'
+          room_token: string
+          scheduled_start: string
+          started_at: string | null
+          ended_at: string | null
+          expires_at: string
+          created_at: string
+          updated_at: string
+        }
+      }
+      consultation_notes: {
+        Row: {
+          id: string
+          consultation_id: string
+          subjective: string
+          objective: string
+          assessment: string
+          plan: string
+          updated_at: string
+        }
+      }
+      prescriptions: {
+        Row: {
+          id: string
+          consultation_id: string
+          diagnosis: string | null
+          medicine_items: Json
+          lab_tests: Json
+          follow_up_date: string | null
+          notes: string | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+      }
+      consultation_chat: {
+        Row: {
+          id: string
+          consultation_id: string
+          sender_role: 'doctor' | 'patient'
+          sender_name: string | null
+          message: string | null
+          attachment_url: string | null
           created_at: string
         }
       }
@@ -212,7 +271,7 @@ export interface Database {
         Returns: Json
       }
       request_patient_otp: {
-        Args: { p_phone: string }
+        Args: { p_phone: string; p_language?: string }
         Returns: Json
       }
       verify_patient_otp: {
@@ -227,6 +286,26 @@ export interface Database {
         Args: { p_appointment_id: string; p_new_date: string; p_new_time?: string }
         Returns: Json
       }
+      book_video_consultation: {
+        Args: { p_queue_id: string; p_phone: string; p_patient_id?: string; p_name?: string; p_date?: string; p_time?: string }
+        Returns: Json
+      }
+      set_consultation_status: {
+        Args: { p_consultation_id: string; p_status: string }
+        Returns: Json
+      }
+      save_consultation_notes: {
+        Args: { p_consultation_id: string; p_subjective?: string; p_objective?: string; p_assessment?: string; p_plan?: string }
+        Returns: Json
+      }
+      save_prescription: {
+        Args: { p_consultation_id: string; p_diagnosis?: string; p_medicine_items?: Json; p_lab_tests?: Json; p_follow_up_date?: string; p_notes?: string; p_created_by?: string }
+        Returns: Json
+      }
+      submit_consultation_rating: {
+        Args: { p_consultation_id: string; p_rating_value: number; p_comment?: string }
+        Returns: Json
+      }
     }
   }
 }
@@ -234,6 +313,10 @@ export interface Database {
 export type Appointment = Database["public"]["Tables"]["appointments"]["Row"];
 export type PatientProfile = Database["public"]["Tables"]["patient_profiles"]["Row"];
 export type Bill = Database["public"]["Tables"]["bills"]["Row"];
+export type Consultation = Database["public"]["Tables"]["consultations"]["Row"];
+export type ConsultationNotes = Database["public"]["Tables"]["consultation_notes"]["Row"];
+export type Prescription = Database["public"]["Tables"]["prescriptions"]["Row"];
+export type ConsultationChatMessage = Database["public"]["Tables"]["consultation_chat"]["Row"];
 
 // Legacy Type Aliases to support older components
 export type Ticket = Database["public"]["Tables"]["tickets"]["Row"];

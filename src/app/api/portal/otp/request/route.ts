@@ -8,13 +8,17 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const phone = String(body?.phone || "").trim();
+    const preferredLanguage = String(body?.preferred_language || "");
 
     if (phone.length < 8) {
       return NextResponse.json({ error: "Please enter a valid phone number" }, { status: 400 });
     }
 
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("request_patient_otp", { p_phone: phone });
+    const { data, error } = await supabase.rpc("request_patient_otp", {
+      p_phone: phone,
+      p_language: preferredLanguage || null,
+    });
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { QueueGraphItem } from "@/hooks/useQueueGraphData";
 import {
   AreaChart,
@@ -18,6 +19,8 @@ interface LiveQueueGraphProps {
 }
 
 export function LiveQueueGraph({ items }: LiveQueueGraphProps) {
+  const { t } = useTranslation();
+
   if (!items || items.length === 0) {
     return (
       <div className="w-full bg-surface/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 text-center shadow-xl my-6">
@@ -25,8 +28,8 @@ export function LiveQueueGraph({ items }: LiveQueueGraphProps) {
           <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
             <Clock className="w-6 h-6 text-muted-foreground" />
           </div>
-          <p className="text-sm font-bold text-foreground">Queue is Clear</p>
-          <p className="text-xs text-muted-foreground mt-1">No patients currently waiting or being served.</p>
+          <p className="text-sm font-bold text-foreground">{t("graph.clear")}</p>
+          <p className="text-xs text-muted-foreground mt-1">{t("graph.noPatients")}</p>
         </div>
       </div>
     );
@@ -51,20 +54,20 @@ export function LiveQueueGraph({ items }: LiveQueueGraphProps) {
         <div>
           <div className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-accent animate-pulse" />
-            <h3 className="font-bold text-foreground text-base md:text-lg font-sans">Live Queue Wait Trend</h3>
+            <h3 className="font-bold text-foreground text-base md:text-lg font-sans">{t("graph.title")}</h3>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">Real-time wait duration timeline (minutes)</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{t("graph.subtitle")}</p>
         </div>
 
         <div className="flex items-center gap-4 text-xs font-bold">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
-            <span className="text-muted-foreground">Wait Timeline</span>
+            <span className="text-muted-foreground">{t("graph.legend")}</span>
           </div>
           {selfItem && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400">
               <Sparkles className="w-3 h-3" />
-              <span>Your Token (#{selfItem.tokenNum})</span>
+              <span>{t("graph.yourToken", { n: selfItem.tokenNum })}</span>
             </div>
           )}
         </div>
@@ -102,11 +105,11 @@ export function LiveQueueGraph({ items }: LiveQueueGraphProps) {
                   return (
                     <div className="bg-slate-900/95 border border-white/20 p-3 rounded-2xl shadow-2xl text-xs text-white backdrop-blur-md">
                       <div className="flex items-center justify-between gap-4 font-bold text-accent mb-1">
-                        <span>Token {data.token}</span>
-                        {data.isSelf && <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-1.5 rounded">YOU</span>}
+                        <span>{t("graph.tokenX", { n: data.token })}</span>
+                        {data.isSelf && <span className="text-[10px] bg-amber-400 text-slate-950 font-black px-1.5 rounded">{t("graph.you")}</span>}
                       </div>
-                      <p className="text-slate-300 font-semibold">Waited: <strong className="text-white">{data.waited} minutes</strong></p>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wider mt-1">Status: {data.status} • {data.emergency}</p>
+                      <p className="text-slate-300 font-semibold">{t("graph.waited", { n: data.waited })}</p>
+                      <p className="text-[10px] text-slate-400 uppercase tracking-wider mt-1">{t("graph.statusLine", { status: data.status, emergency: data.emergency })}</p>
                     </div>
                   );
                 }

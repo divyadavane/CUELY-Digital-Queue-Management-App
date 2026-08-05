@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, ArrowRight, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { CountryPhoneInput } from "@/components/ui/country-phone-input";
 import { CuelyLogo } from "@/components/ui/CuelyLogo";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { portalApi, setPortalToken } from "@/lib/portal/client";
 
 interface RequestOtpResponse {
@@ -18,6 +20,7 @@ interface RequestOtpResponse {
 }
 
 export function PortalLogin() {
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
@@ -50,7 +53,7 @@ export function PortalLogin() {
 
   const sendOtp = async () => {
     if (phone.trim().length < 8) {
-      setError("Please enter a valid phone number");
+      setError(t("login.validPhone"));
       return;
     }
     setError(null);
@@ -58,19 +61,19 @@ export function PortalLogin() {
     try {
       const res = await portalApi<RequestOtpResponse>("/api/portal/otp/request", {
         method: "POST",
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ phone, preferred_language: i18n.language }),
       });
       if (res.delivery) {
         setDeliveryMsg(
           res.delivery.success
-            ? { ok: true, text: "Code sent to your WhatsApp" }
-            : { ok: false, text: res.delivery.error || "Could not deliver via WhatsApp" }
+            ? { ok: true, text: t("login.codeSent") }
+            : { ok: false, text: res.delivery.error || t("login.deliveryFailed") }
         );
       }
       setStep("otp");
       startResendTimer();
     } catch (e: any) {
-      setError(e?.message || "Failed to send code. Please try again.");
+      setError(e?.message || t("login.sendFailed"));
     } finally {
       setLoading(false);
     }
@@ -95,7 +98,7 @@ export function PortalLogin() {
   const verifyOtp = async () => {
     const code = otp.join("");
     if (code.length < 6) {
-      setError("Enter the 6-digit code");
+      setError(t("login.enterCodeError"));
       return;
     }
     setError(null);
@@ -108,7 +111,7 @@ export function PortalLogin() {
       setPortalToken(res.token);
       router.replace("/portal");
     } catch (e: any) {
-      setError(e?.message || "Invalid code. Please try again.");
+      setError(e?.message || t("login.invalidCode"));
     } finally {
       setLoading(false);
     }
@@ -123,19 +126,22 @@ export function PortalLogin() {
 
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
+          <div className="flex justify-end mb-2">
+            <LanguageSwitcher align="right" />
+          </div>
           <CuelyLogo size="lg" showGlow className="mx-auto mb-4" />
-          <h1 className="text-2xl font-extrabold">Patient Portal</h1>
+          <h1 className="text-2xl font-extrabold">{t("login.portalTitle")}</h1>
           <p className="text-xs text-slate-400 font-medium mt-1.5">
-            Your visits, appointments, ratings & bills — in one place.
+            {t("login.portalSubtitle")}
           </p>
         </div>
 
         <div className="bg-white/[0.04] border border-white/10 rounded-3xl backdrop-blur-xl shadow-2xl shadow-black/40 overflow-hidden">
           {step === "phone" ? (
             <div className="p-6 md:p-8">
-              <h2 className="text-lg font-extrabold mb-1">Login with your phone</h2>
+              <h2 className="text-lg font-extrabold mb-1">{t("login.loginPhone")}</h2>
               <p className="text-xs text-slate-400 font-medium mb-6">
-                We&apos;ll text you a one-time code. No password needed.
+                {t("login.loginPhoneSub")}
               </p>
 
               {error && (
@@ -144,7 +150,7 @@ export function PortalLogin() {
                 </div>
               )}
 
-              <label className="block text-[11px] font-bold text-slate-400 mb-2">Phone Number</label>
+              <label className="block text-[11px] font-bold text-slate-400 mb-2">{t("login.phoneNumber")}</label>
               <CountryPhoneInput value={phone} onChange={setPhone} />
 
               <button
@@ -153,11 +159,11 @@ export function PortalLogin() {
                 className="mt-6 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-110 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-blue-900/40"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                Send OTP
+                {t("login.sendOtp")}
               </button>
 
               <p className="text-[10px] text-slate-500 text-center mt-4 leading-relaxed">
-                By continuing you agree to receive one-time verification and status messages.
+                {t("login.consent")}
               </p>
             </div>
           ) : (
@@ -166,12 +172,12 @@ export function PortalLogin() {
                 onClick={() => setStep("phone")}
                 className="flex items-center gap-1 text-xs font-bold text-slate-400 hover:text-white mb-5 transition-all"
               >
-                <ArrowLeft className="w-3.5 h-3.5" /> Back
+                <ArrowLeft className="w-3.5 h-3.5" /> {t("login.back")}
               </button>
 
-              <h2 className="text-lg font-extrabold mb-1">Enter the 6-digit code</h2>
+              <h2 className="text-lg font-extrabold mb-1">{t("login.enterCode")}</h2>
               <p className="text-xs text-slate-400 font-medium mb-6">
-                Sent to <span className="text-white font-bold">{phone}</span>
+                {t("login.sentTo", { phone: <span className="text-white font-bold">{phone}</span> })}
               </p>
 
               {deliveryMsg && (
@@ -214,20 +220,20 @@ export function PortalLogin() {
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-110 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-blue-900/40"
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
-                Verify & Login
+                {t("login.verifyLogin")}
               </button>
 
               <div className="text-center mt-4">
                 {resendIn > 0 ? (
                   <p className="text-[11px] text-slate-500 font-medium">
-                    Resend code in {resendIn}s
+                    {t("login.resendIn", { n: resendIn })}
                   </p>
                 ) : (
                   <button
                     onClick={sendOtp}
                     className="text-[11px] font-bold text-blue-300 hover:text-blue-200 flex items-center gap-1 mx-auto"
                   >
-                    Resend code <ArrowRight className="w-3 h-3" />
+                    {t("login.resend")} <ArrowRight className="w-3 h-3" />
                   </button>
                 )}
               </div>
@@ -236,7 +242,7 @@ export function PortalLogin() {
         </div>
 
         <p className="text-center text-[10px] text-slate-600 mt-6">
-          Powered by Cuely — Digital Queue Management
+          {t("login.poweredBy")}
         </p>
       </div>
     </div>

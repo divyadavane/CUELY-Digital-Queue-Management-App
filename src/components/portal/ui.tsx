@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 
 export function PortalCard({
@@ -74,8 +75,9 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export function StatusPill({ status, label }: { status: string; label?: string }) {
+  const { t } = useTranslation();
   const style = STATUS_STYLES[status] || "bg-slate-500/15 border-slate-500/30 text-slate-300";
-  const text = label || status.replace("_", " ");
+  const text = label || t(`common.status.${status}`, { defaultValue: status.replace("_", " ") });
   return (
     <span className={`inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${style}`}>
       {text}

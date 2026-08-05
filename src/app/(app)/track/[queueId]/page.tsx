@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { useTicketRealtime } from "@/hooks/useTicketRealtime";
 import { JoinForm } from "@/components/track/JoinForm";
 import { LiveTrackingCard } from "@/components/track/LiveTrackingCard";
@@ -14,16 +15,23 @@ import Link from "next/link";
 import { CuelyLogo } from "@/components/ui/CuelyLogo";
 import { PatientChatWidget } from "@/components/patient/PatientChatWidget";
 import { DepartmentDoctorWizard } from "@/components/patient/DepartmentDoctorWizard";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
+import { createClient } from "@/lib/supabase";
 import { Database } from "@/types/database";
 
 type Queue = Database["public"]["Tables"]["queues"]["Row"];
 
 export default function TrackPage() {
+  const { t } = useTranslation();
+  const { lang, setLang } = useLanguage();
   const params = useParams();
   const queueId = params.queueId as string;
   
   const [storedTicketId, setStoredTicketId] = useState<string | null>(null);
   const [storageLoaded, setStorageLoaded] = useState(false);
+
+  const supabase = createClient();
 
   // Load stored ticket on mount
   useEffect(() => {
@@ -37,6 +45,30 @@ export default function TrackPage() {
 
   const { ticket, queue, position, estimatedWaitMinutes, loading } = useTicketRealtime(storedTicketId, queueId);
   const graphData = useQueueGraphData(queueId, storedTicketId);
+
+  // When no explicit language choice is stored, adopt the hospital's
+  // configured default_language for this queue's business.
+  useEffect(() => {
+    if (!queue?.business_id) return;
+    if (typeof window === "undefined") return;
+    let hasChoice = false;
+    try {
+      hasChoice = !!window.localStorage.getItem("cuely_lang");
+    } catch {}
+    if (hasChoice) return;
+
+    supabase
+      .from("businesses")
+      .select("default_language")
+      .eq("id", queue.business_id)
+      .maybeSingle()
+      .then((res: { data: { default_language?: string } | null }) => {
+        if (res.data?.default_language && res.data.default_language !== lang) {
+          setLang(res.data.default_language);
+        }
+      })
+      .catch(() => {});
+  }, [queue?.business_id, lang, setLang, supabase]);
 
   const handleJoin = (newTicketId: string) => {
     localStorage.setItem(`cuely_ticket_${queueId}`, newTicketId);
@@ -54,7 +86,7 @@ export default function TrackPage() {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
         <Loader2 className="w-10 h-10 animate-spin text-accent mb-4" />
-        <p className="text-muted-foreground font-medium">Loading queue...</p>
+        <p className="text-muted-foreground font-medium">{t("common.loadingQueued")}</p>
       </div>
     );
   }
@@ -85,8 +117,9 @@ export default function TrackPage() {
             href="/portal/login"
             className="text-xs font-bold px-3 py-1 bg-accent/10 border border-accent/30 text-accent rounded-full hover:bg-accent/20 transition-all"
           >
-            My Portal
+            {t("track.myPortal")}
           </Link>
+          <LanguageSwitcher align="right" />
         </div>
       </header>
 
@@ -97,8 +130,8 @@ export default function TrackPage() {
             <QueuePausedState />
           ) : (
             <div className="w-full">
-              <h2 className="text-2xl font-bold mb-4 text-center">Welcome</h2>
-              <p className="text-muted-foreground mb-6 text-center">Please fill out the form to join the queue.</p>
+              <h2 className="text-2xl font-bold mb-4 text-center">{t("track.welcome")}</h2>
+              <p className="text-muted-foreground mb-6 text-center">{t("track.fillForm")}</p>
               <JoinForm 
                 queue={queue} 
                 onJoin={handleJoin} 
@@ -124,7 +157,7 @@ export default function TrackPage() {
 
       {/* Footer */}
       <footer className="py-6 text-center text-sm font-medium text-muted-foreground">
-        Powered by Cuely
+        {t("track.poweredBy")}
       </footer>
     </div>
   );

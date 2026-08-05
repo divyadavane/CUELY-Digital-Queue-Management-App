@@ -7,6 +7,8 @@ import { useTicketRealtime } from "@/hooks/useTicketRealtime";
 import { useQueueGraphData } from "@/hooks/useQueueGraphData";
 import { JoinForm } from "@/components/track/JoinForm";
 import { DepartmentDoctorWizard } from "@/components/patient/DepartmentDoctorWizard";
+import { useLanguage } from "@/components/i18n/LanguageProvider";
+import { createClient } from "@/lib/supabase";
 import { Database } from "@/types/database";
 
 type Queue = Database["public"]["Tables"]["queues"]["Row"];
@@ -19,8 +21,11 @@ import { QueuePausedState } from "@/components/track/QueuePausedState";
 import { Loader2, Users, CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { CuelyLogo } from "@/components/ui/CuelyLogo";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 
 export default function JoinCustomerPage() {
+  const { t } = useTranslation();
+  const { lang, setLang } = useLanguage();
   const params = useParams();
   const queueId = params.queueId as string;
 
@@ -28,6 +33,8 @@ export default function JoinCustomerPage() {
   const [storedTicketId, setStoredTicketId] = useState<string | null>(null);
   const [storedAppt, setStoredAppt] = useState<{ id: string; date: string } | null>(null);
   const [storageLoaded, setStorageLoaded] = useState(false);
+
+  const supabase = createClient();
 
   // Load stored ticket & appointment on mount
   useEffect(() => {
@@ -51,6 +58,30 @@ export default function JoinCustomerPage() {
 
   const { ticket, queue, position, estimatedWaitMinutes, loading } = useTicketRealtime(storedTicketId, queueId);
   const graphData = useQueueGraphData(queueId, storedTicketId);
+
+  // When no explicit language choice is stored, adopt the hospital's
+  // configured default_language for this queue's business.
+  useEffect(() => {
+    if (!queue?.business_id) return;
+    if (typeof window === "undefined") return;
+    let hasChoice = false;
+    try {
+      hasChoice = !!window.localStorage.getItem("cuely_lang");
+    } catch {}
+    if (hasChoice) return;
+
+    supabase
+      .from("businesses")
+      .select("default_language")
+      .eq("id", queue.business_id)
+      .maybeSingle()
+      .then((res: { data: { default_language?: string } | null }) => {
+        if (res.data?.default_language && res.data.default_language !== lang) {
+          setLang(res.data.default_language);
+        }
+      })
+      .catch(() => {});
+  }, [queue?.business_id, lang, setLang, supabase]);
 
   const handleJoin = (newTicketId: string) => {
     localStorage.setItem(`cuely_ticket_${queueId}`, newTicketId);
@@ -77,7 +108,7 @@ export default function JoinCustomerPage() {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
         <Loader2 className="w-10 h-10 animate-spin text-accent mb-4" />
-        <p className="text-muted-foreground font-medium">Loading queue...</p>
+        <p className="text-muted-foreground font-medium">{t("common.loadingQueued")}</p>
       </div>
     );
   }
@@ -104,6 +135,7 @@ export default function JoinCustomerPage() {
           <span className="text-xs font-semibold px-3 py-1 bg-surface border border-border rounded-full text-muted-foreground">
             {queue.name}
           </span>
+          <LanguageSwitcher align="right" />
         </div>
       </header>
 
@@ -146,7 +178,7 @@ export default function JoinCustomerPage() {
                 }`}
               >
                 <Users className="w-4 h-4" />
-                Join Queue Now
+                {t("join.joinNow")}
               </button>
               <button
                 onClick={() => setMode("book")}
@@ -157,7 +189,7 @@ export default function JoinCustomerPage() {
                 }`}
               >
                 <CalendarDays className="w-4 h-4" />
-                Book for Later
+                {t("join.bookForLater")}
               </button>
             </div>
 
@@ -179,7 +211,7 @@ export default function JoinCustomerPage() {
 
       {/* Footer */}
       <footer className="py-6 text-center text-sm font-medium text-muted-foreground border-t border-border/50">
-        Powered by Cuely Digital Queue
+        {t("join.poweredBy")}
       </footer>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Heart, Send, CheckCircle2 } from "lucide-react";
 import { RatingStars } from "@/components/ui/RatingStars";
 
@@ -13,6 +14,7 @@ interface RatingPromptProps {
 }
 
 export function RatingPrompt({ queueId, ticketId, patientName, doctorName, onDismiss }: RatingPromptProps) {
+  const { t } = useTranslation();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -48,7 +50,7 @@ export function RatingPrompt({ queueId, ticketId, patientName, doctorName, onDis
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        setError(body.error || "Something went wrong. Please try again.");
+        setError(body.error || t("rating.error"));
         setSubmitting(false);
         return;
       }
@@ -60,7 +62,7 @@ export function RatingPrompt({ queueId, ticketId, patientName, doctorName, onDis
         onDismiss?.();
       }, 2000);
     } catch {
-      setError("Could not submit your rating. Please try again.");
+      setError(t("rating.submitError"));
       setSubmitting(false);
     }
   };
@@ -72,23 +74,23 @@ export function RatingPrompt({ queueId, ticketId, patientName, doctorName, onDis
       {status === "done" ? (
         <div className="text-center py-4 animate-in fade-in">
           <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
-          <p className="font-bold text-white">Thanks for your feedback!</p>
-          <p className="text-xs text-slate-400 mt-1">Your rating helps other patients.</p>
+          <p className="font-bold text-white">{t("rating.thanks")}</p>
+          <p className="text-xs text-slate-400 mt-1">{t("rating.helpsOthers")}</p>
         </div>
       ) : status === "already_rated" ? (
         <div className="text-center py-4">
-          <p className="font-bold text-slate-300">You have already rated this visit.</p>
-          <p className="text-xs text-slate-500 mt-1">Thank you for your feedback!</p>
+          <p className="font-bold text-slate-300">{t("rating.alreadyRated")}</p>
+          <p className="text-xs text-slate-500 mt-1">{t("rating.thanksAgain")}</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
           <div className="flex items-center gap-2 mb-1">
             <Heart className="w-4 h-4 text-pink-400" />
             <h3 className="font-bold text-white">
-              {doctorName ? `How was your visit with ${doctorName}?` : "How was your visit?"}
+              {doctorName ? t("rating.howVisitWith", { doctor: doctorName }) : t("rating.howVisit")}
             </h3>
           </div>
-          <p className="text-xs text-slate-400 mb-4">Tap a star to rate your experience (1–5)</p>
+          <p className="text-xs text-slate-400 mb-4">{t("rating.tapStar")}</p>
 
           <div className="flex items-center justify-center py-3 bg-white/5 border border-white/10 rounded-2xl mb-4">
             <RatingStars value={rating} size="lg" interactive onChange={setRating} />
@@ -97,7 +99,7 @@ export function RatingPrompt({ queueId, ticketId, patientName, doctorName, onDis
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Optional: share a short comment about your visit…"
+            placeholder={t("rating.commentPlaceholder")}
             rows={2}
             className="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-pink-500/60 transition-all resize-none"
           />
@@ -110,7 +112,7 @@ export function RatingPrompt({ queueId, ticketId, patientName, doctorName, onDis
             className="mt-4 w-full flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-pink-500 to-fuchsia-600 text-white font-bold rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 active:scale-[0.98]"
           >
             <Send className="w-4 h-4" />
-            {submitting ? "Submitting…" : "Submit Rating"}
+            {submitting ? t("rating.submitting") : t("rating.submit")}
           </button>
         </form>
       )}

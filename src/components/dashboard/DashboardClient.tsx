@@ -17,8 +17,9 @@ import { createClient } from "@/lib/supabase";
 import { Toaster } from "react-hot-toast";
 import { SmsTemplateEditorModal } from "./SmsTemplateEditorModal";
 import { BillingManager } from "./BillingManager";
+import { BusinessSettingsModal } from "./BusinessSettingsModal";
 import { BillInfo } from "./BillStatusBadge";
-import { LayoutDashboard, BarChart3, Command, Keyboard, MessageSquare, Settings } from "lucide-react";
+import { LayoutDashboard, BarChart3, Command, Keyboard, MessageSquare, Settings, Globe } from "lucide-react";
 import toast from "react-hot-toast";
 
 type Queue = Database["public"]["Tables"]["queues"]["Row"];
@@ -49,6 +50,7 @@ export function DashboardClient({
   const [activeTab, setActiveTab] = useState<"queue" | "analytics">("queue");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
+  const [isBusinessSettingsOpen, setIsBusinessSettingsOpen] = useState(false);
 
   const { tickets, loading, queues, isMuted, toggleMute } = useQueueRealtime(
     activeQueueId,
@@ -258,6 +260,25 @@ export function DashboardClient({
                         />
                         <PauseToggle queueId={activeQueueId} isPaused={activeQueue?.is_paused || false} />
                         <ManualTicketForm queueId={activeQueueId} />
+
+                        {/* Patient Language Settings */}
+                        <div className="bg-surface/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-xl space-y-4">
+                          <div className="flex items-center gap-2 text-foreground font-bold font-sans text-sm">
+                            <Globe className="w-4 h-4 text-accent" />
+                            <span>Patient Language</span>
+                          </div>
+                          <p className="text-xs text-slate-400">
+                            Default language for join &amp; track pages when a patient hasn&apos;t selected one.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setIsBusinessSettingsOpen(true)}
+                            className="w-full py-2.5 px-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-slate-200 hover:text-white transition-all flex items-center justify-center gap-2"
+                          >
+                            <Settings className="w-3.5 h-3.5 text-accent" />
+                            <span>Configure Default Language</span>
+                          </button>
+                        </div>
                       </>
                     )}
 
@@ -370,6 +391,12 @@ export function DashboardClient({
           onClose={() => setIsSmsModalOpen(false)}
         />
       )}
+
+      <BusinessSettingsModal
+        businessId={businessId}
+        isOpen={isBusinessSettingsOpen}
+        onClose={() => setIsBusinessSettingsOpen(false)}
+      />
     </div>
   );
 }

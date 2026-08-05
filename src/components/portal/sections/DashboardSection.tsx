@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import {
   ArrowRight,
   CalendarDays,
@@ -14,6 +15,7 @@ import {
 import { portalApi } from "@/lib/portal/client";
 import { createClient } from "@/lib/supabase";
 import { PortalCard, SectionTitle, StatusPill } from "@/components/portal/ui";
+import { formatDate as fmtDate, formatTime as fmtTime } from "@/lib/i18n/format";
 
 interface DashboardData {
   activeTicket: any | null;
@@ -29,6 +31,7 @@ interface DashboardSectionProps {
 const STEP_ORDER = ["waiting", "called", "serving", "served"];
 
 export function DashboardSection({ patientName, onNavigate }: DashboardSectionProps) {
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -79,7 +82,7 @@ export function DashboardSection({ patientName, onNavigate }: DashboardSectionPr
     return (
       <div className="flex flex-col items-center justify-center py-16 text-slate-400">
         <Loader2 className="w-8 h-8 animate-spin text-blue-400 mb-3" />
-        <p className="text-xs font-semibold">Loading your dashboard...</p>
+        <p className="text-xs font-semibold">{t("dashboardSection.loading")}</p>
       </div>
     );
   }
@@ -92,10 +95,10 @@ export function DashboardSection({ patientName, onNavigate }: DashboardSectionPr
       {/* Greeting */}
       <div>
         <h2 className="text-2xl font-extrabold text-white">
-          {firstName ? `Hi ${firstName}` : "Welcome back"} 👋
+          {firstName ? t("dashboardSection.hi", { name: firstName }) : t("dashboardSection.welcomeBack")} 👋
         </h2>
         <p className="text-xs text-slate-400 font-medium mt-1">
-          Here&apos;s what&apos;s happening with your care.
+          {t("dashboardSection.summary")}
         </p>
       </div>
 
@@ -107,22 +110,22 @@ export function DashboardSection({ patientName, onNavigate }: DashboardSectionPr
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                 <Ticket className="w-4 h-4 text-blue-400" />
-                Live Queue Ticket
+                {t("dashboardSection.liveTicket")}
               </div>
               <StatusPill status={active.status} />
             </div>
 
             <div className="flex items-end justify-between mb-5">
               <div>
-                <p className="text-xs font-semibold text-slate-400">Token Number</p>
+                <p className="text-xs font-semibold text-slate-400">{t("dashboardSection.tokenNumber")}</p>
                 <p className="text-5xl font-black text-amber-400 tracking-tight">
                   #{active.token_number}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-xs font-semibold text-slate-400">Doctor</p>
+                <p className="text-xs font-semibold text-slate-400">{t("dashboardSection.doctor")}</p>
                 <p className="text-sm font-bold text-white">
-                  {active.queues?.doctor_name || active.queues?.name || "Queue"}
+                  {active.queues?.doctor_name || active.queues?.name || t("dashboardSection.queue")}
                 </p>
                 <p className="text-[11px] text-slate-400 font-medium">{active.queues?.department}</p>
               </div>
@@ -148,7 +151,7 @@ export function DashboardSection({ patientName, onNavigate }: DashboardSectionPr
                       i <= activeStep ? "text-blue-300" : "text-slate-500"
                     }`}
                   >
-                    {step}
+                    {t(`dashboardSection.step${step.charAt(0).toUpperCase() + step.slice(1)}`)}
                   </p>
                 </div>
               ))}
@@ -156,7 +159,7 @@ export function DashboardSection({ patientName, onNavigate }: DashboardSectionPr
 
             {active.status === "called" && (
               <div className="mt-4 p-3 bg-blue-500/15 border border-blue-500/40 rounded-2xl text-blue-200 text-xs font-bold text-center animate-pulse">
-                It&apos;s your turn — please proceed to {active.queues?.counter_number || "the desk"}.
+                {t("dashboardSection.yourTurn", { counter: active.queues?.counter_number || "the desk" })}
               </div>
             )}
           </div>
@@ -167,7 +170,7 @@ export function DashboardSection({ patientName, onNavigate }: DashboardSectionPr
 
       {/* Next Appointment */}
       <div>
-        <SectionTitle title="Appointments" />
+        <SectionTitle title={t("dashboardSection.appointments")} />
         {data?.upcomingAppointment ? (
           <PortalCard className="p-5">
             <div className="flex items-center justify-between gap-3">
@@ -179,12 +182,12 @@ export function DashboardSection({ patientName, onNavigate }: DashboardSectionPr
                   <p className="text-sm font-bold text-white truncate">
                     {data.upcomingAppointment.queues?.doctor_name ||
                       data.upcomingAppointment.queues?.name ||
-                      "Appointment"}
+                      t("dashboardSection.appointments")}
                   </p>
                   <p className="text-[11px] text-slate-400 font-medium">
-                    {formatDate(data.upcomingAppointment.appointment_date)}
+                    {fmtDate(data.upcomingAppointment.appointment_date, i18n.language)}
                     {data.upcomingAppointment.appointment_time
-                      ? ` · ${formatTime(data.upcomingAppointment.appointment_time)}`
+                      ? ` · ${fmtTime(data.upcomingAppointment.appointment_time, i18n.language)}`
                       : ""}
                   </p>
                 </div>
@@ -193,7 +196,7 @@ export function DashboardSection({ patientName, onNavigate }: DashboardSectionPr
                 onClick={() => onNavigate("appointments")}
                 className="flex items-center gap-1 text-[11px] font-bold text-blue-300 hover:text-blue-200 shrink-0"
               >
-                View <ArrowRight className="w-3.5 h-3.5" />
+                {t("dashboardSection.view")} <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </PortalCard>
@@ -203,8 +206,8 @@ export function DashboardSection({ patientName, onNavigate }: DashboardSectionPr
               <CalendarDays className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-bold text-white">No upcoming appointments</p>
-              <p className="text-[11px] text-slate-400 font-medium">Book your next visit in seconds.</p>
+              <p className="text-sm font-bold text-white">{t("dashboardSection.noUpcoming")}</p>
+              <p className="text-[11px] text-slate-400 font-medium">{t("dashboardSection.bookNext")}</p>
             </div>
           </PortalCard>
         )}
@@ -212,23 +215,23 @@ export function DashboardSection({ patientName, onNavigate }: DashboardSectionPr
 
       {/* Quick Actions */}
       <div>
-        <SectionTitle title="Quick Actions" />
+        <SectionTitle title={t("dashboardSection.quickActions")} />
         <div className="grid grid-cols-2 gap-3">
           <Link
             href="/patient"
             className="group bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-5 border border-white/10 hover:brightness-110 transition-all shadow-lg shadow-blue-900/30"
           >
             <UserPlus className="w-6 h-6 text-white mb-3 group-hover:scale-110 transition-transform" />
-            <p className="text-sm font-extrabold text-white">Join Queue</p>
-            <p className="text-[10px] text-blue-100/80 font-medium mt-0.5">Pick a doctor & get a token</p>
+            <p className="text-sm font-extrabold text-white">{t("dashboardSection.joinQueue")}</p>
+            <p className="text-[10px] text-blue-100/80 font-medium mt-0.5">{t("dashboardSection.joinQueueSub")}</p>
           </Link>
           <button
             onClick={() => onNavigate("appointments")}
             className="text-left group bg-gradient-to-br from-purple-600 to-fuchsia-700 rounded-3xl p-5 border border-white/10 hover:brightness-110 transition-all shadow-lg shadow-purple-900/30"
           >
             <CalendarDays className="w-6 h-6 text-white mb-3 group-hover:scale-110 transition-transform" />
-            <p className="text-sm font-extrabold text-white">Book Appointment</p>
-            <p className="text-[10px] text-purple-100/80 font-medium mt-0.5">Schedule a visit for later</p>
+            <p className="text-sm font-extrabold text-white">{t("dashboardSection.bookAppointment")}</p>
+            <p className="text-[10px] text-purple-100/80 font-medium mt-0.5">{t("dashboardSection.bookAppointmentSub")}</p>
           </button>
         </div>
       </div>
@@ -237,6 +240,7 @@ export function DashboardSection({ patientName, onNavigate }: DashboardSectionPr
 }
 
 function EmptyStateCard({ onNavigate }: { onNavigate: (tab: string) => void }) {
+  const { t } = useTranslation();
   return (
     <PortalCard className="p-6 text-center relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-purple-600/10 pointer-events-none" />
@@ -244,22 +248,22 @@ function EmptyStateCard({ onNavigate }: { onNavigate: (tab: string) => void }) {
         <div className="w-14 h-14 mx-auto rounded-2xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-300 mb-4">
           <Stethoscope className="w-7 h-7" />
         </div>
-        <h3 className="font-bold text-white">No active queue visit</h3>
+        <h3 className="font-bold text-white">{t("dashboardSection.noActiveVisit")}</h3>
         <p className="text-xs text-slate-400 mt-1.5 max-w-xs mx-auto leading-relaxed">
-          You&apos;re not currently in a queue. Join one and track your token live right here.
+          {t("dashboardSection.noActiveVisitSub")}
         </p>
         <div className="mt-5 flex items-center justify-center gap-2">
           <Link
             href="/patient"
             className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all"
           >
-            <UserPlus className="w-4 h-4" /> Join Queue
+            <UserPlus className="w-4 h-4" /> {t("dashboardSection.joinQueue")}
           </Link>
           <button
             onClick={() => onNavigate("appointments")}
             className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all"
           >
-            <Sparkles className="w-4 h-4" /> Book
+            <Sparkles className="w-4 h-4" /> {t("dashboardSection.book")}
           </button>
         </div>
       </div>

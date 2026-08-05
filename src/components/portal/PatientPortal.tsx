@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import {
   CalendarDays,
   History,
@@ -14,6 +15,7 @@ import {
 import { clearPortalToken } from "@/lib/portal/client";
 import { usePortalSession } from "@/hooks/usePortalSession";
 import { CuelyLogo } from "@/components/ui/CuelyLogo";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { DashboardSection } from "@/components/portal/sections/DashboardSection";
 import { AppointmentsSection } from "@/components/portal/sections/AppointmentsSection";
 import { VisitsSection } from "@/components/portal/sections/VisitsSection";
@@ -23,16 +25,17 @@ import { ProfileSection } from "@/components/portal/sections/ProfileSection";
 
 type Tab = "dashboard" | "appointments" | "visits" | "ratings" | "billing" | "profile";
 
-const NAV_ITEMS: { key: Tab; label: string; icon: React.ReactNode }[] = [
-  { key: "dashboard", label: "Home", icon: <LayoutDashboard className="w-5 h-5" /> },
-  { key: "appointments", label: "Appts", icon: <CalendarDays className="w-5 h-5" /> },
-  { key: "visits", label: "Visits", icon: <History className="w-5 h-5" /> },
-  { key: "ratings", label: "Ratings", icon: <Star className="w-5 h-5" /> },
-  { key: "billing", label: "Billing", icon: <Wallet className="w-5 h-5" /> },
-  { key: "profile", label: "Profile", icon: <User className="w-5 h-5" /> },
+const NAV_ITEMS: { key: Tab; labelKey: string; icon: React.ReactNode }[] = [
+  { key: "dashboard", labelKey: "portal.nav.home", icon: <LayoutDashboard className="w-5 h-5" /> },
+  { key: "appointments", labelKey: "portal.nav.appts", icon: <CalendarDays className="w-5 h-5" /> },
+  { key: "visits", labelKey: "portal.nav.visits", icon: <History className="w-5 h-5" /> },
+  { key: "ratings", labelKey: "portal.nav.ratings", icon: <Star className="w-5 h-5" /> },
+  { key: "billing", labelKey: "portal.nav.billing", icon: <Wallet className="w-5 h-5" /> },
+  { key: "profile", labelKey: "portal.nav.profile", icon: <User className="w-5 h-5" /> },
 ];
 
 export function PatientPortal() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { profile, loading, refresh } = usePortalSession();
   const [tab, setTab] = useState<Tab>("dashboard");
@@ -41,7 +44,7 @@ export function PatientPortal() {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center gap-4">
         <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs font-semibold text-slate-400">Opening your portal...</p>
+        <p className="text-xs font-semibold text-slate-400">{t("portal.loading")}</p>
       </div>
     );
   }
@@ -52,7 +55,7 @@ export function PatientPortal() {
     return null;
   }
 
-  const firstName = (profile.name || "Patient").trim().split(" ")[0];
+  const firstName = (profile.name || t("common.patient")).trim().split(" ")[0];
 
   return (
     <div className="min-h-screen bg-[#070b16] text-white font-manrope">
@@ -68,19 +71,22 @@ export function PatientPortal() {
           <div className="flex items-center gap-2.5">
             <CuelyLogo size="sm" showGlow />
             <div>
-              <p className="text-sm font-extrabold leading-none">My Portal</p>
+              <p className="text-sm font-extrabold leading-none">{t("portal.title")}</p>
               <p className="text-[10px] text-slate-400 font-medium mt-0.5">
-                Welcome, {firstName}
+                {t("portal.welcome", { name: firstName })}
               </p>
             </div>
           </div>
-          <button
-            onClick={() => router.push("/portal/login")}
-            className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 transition-all"
-            title="Sign out"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher align="right" size="sm" />
+            <button
+              onClick={() => router.push("/portal/login")}
+              className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 transition-all"
+              title={t("portal.signOut")}
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -113,7 +119,7 @@ export function PatientPortal() {
                 <span className="absolute top-0 w-10 h-0.5 rounded-full bg-blue-500" />
               )}
               {item.icon}
-              <span className="text-[9px] font-bold tracking-wide">{item.label}</span>
+              <span className="text-[9px] font-bold tracking-wide">{t(item.labelKey)}</span>
             </button>
           ))}
         </div>

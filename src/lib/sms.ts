@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabaseServer";
 import { sendWhatsAppNotification } from "@/lib/whatsapp";
 
-export type SmsTriggerType = "joined" | "almost_there" | "called" | "no_show" | "served" | "manual";
+export type SmsTriggerType = "joined" | "almost_there" | "called" | "no_show" | "served" | "manual" | "video_booked";
 
 export interface SmsVariables {
   patient_name?: string;
@@ -23,6 +23,7 @@ export const DEFAULT_TEMPLATES: Record<SmsTriggerType, string> = {
   no_show: "You missed your turn for Token #{token_number}. Visit the desk within 10 min to get requeued.",
   served: "Thank you for visiting {clinic_name}! Token #{token_number} is completed. Have a great day!",
   manual: "Update for Token #{token_number} at {clinic_name}: Your queue status has been updated.",
+  video_booked: "Your video consultation with {clinic_name} is confirmed for {date} at {time}. Join: {join_url}",
 };
 
 export function setMemoryTemplates(queueId: string, templates: Record<string, string>) {

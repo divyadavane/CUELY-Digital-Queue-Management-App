@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { createClient } from "@/lib/supabase";
 import { Database } from "@/types/database";
 import { Clock, Users, CheckCircle2, MessageSquare, Volume2, VolumeX, LayoutDashboard } from "lucide-react";
@@ -8,6 +9,7 @@ import { LiveQueueGraph } from "@/components/customer/LiveQueueGraph";
 import { useQueueGraphData } from "@/hooks/useQueueGraphData";
 import { CuelyLogo } from "@/components/ui/CuelyLogo";
 import { RatingPrompt } from "@/components/patient/RatingPrompt";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 
 type Ticket = Database["public"]["Tables"]["tickets"]["Row"];
 
@@ -17,6 +19,7 @@ interface PatientStatusPageProps {
 }
 
 export function PatientStatusPage({ initialTicket, clinicName = "Sunrise Clinic" }: PatientStatusPageProps) {
+  const { t } = useTranslation();
   const [ticket, setTicket] = useState<Ticket>(initialTicket);
   const [positionInLine, setPositionInLine] = useState<number>(1);
   const [estWaitMins, setEstWaitMins] = useState<number>(5);
@@ -90,22 +93,23 @@ export function PatientStatusPage({ initialTicket, clinicName = "Sunrise Clinic"
           <CuelyLogo size="sm" showGlow />
           <div>
             <h1 className="font-bold text-base font-sans text-white">{clinicName}</h1>
-            <p className="text-[11px] text-slate-400 font-medium">Live Patient Queue Portal</p>
+            <p className="text-[11px] text-slate-400 font-medium">{t("status.livePortal")}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
+          <LanguageSwitcher align="right" />
           <a
             href="/portal/login"
             className="p-2 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:text-white transition-all"
-            title="Open My Patient Portal"
+            title={t("status.openPortal")}
           >
             <LayoutDashboard className="w-4 h-4 text-blue-400" />
           </a>
           <button
             onClick={() => setIsAudioEnabled((prev) => !prev)}
             className="p-2 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:text-white"
-            title={isAudioEnabled ? "Audio alerts enabled" : "Audio muted"}
+            title={isAudioEnabled ? t("status.audioOn") : t("status.audioMuted")}
           >
             {isAudioEnabled ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
           </button>
@@ -124,23 +128,23 @@ export function PatientStatusPage({ initialTicket, clinicName = "Sunrise Clinic"
           }`}
         >
           <span className="text-xs font-bold uppercase tracking-widest text-slate-400 block mb-1">
-            Your Token Number
+            {t("status.yourToken")}
           </span>
           <div className="text-6xl font-black font-sans text-amber-400 tracking-tight my-2">
             #{ticket.token_number}
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">{ticket.customer_name || "Patient"}</h2>
+          <h2 className="text-xl font-bold text-white mb-2">{ticket.customer_name || t("common.patient")}</h2>
 
           {/* Status Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-black uppercase tracking-wider text-white">
             <span className={`w-2 h-2 rounded-full ${isCalled ? "bg-blue-400 animate-ping" : isServed ? "bg-emerald-400" : "bg-amber-400"}`} />
-            Status: {ticket.status.toUpperCase()}
+            {t(`common.status.${ticket.status}`)}
           </div>
 
           {/* Call Notice Banner */}
           {isCalled && (
             <div className="mt-6 p-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl text-white font-extrabold shadow-lg animate-bounce">
-              🚨 IT'S YOUR TURN! Please proceed to Desk / Room 1 now.
+              🚨 {t("status.itYourTurn")}
             </div>
           )}
         </div>
@@ -155,31 +159,31 @@ export function PatientStatusPage({ initialTicket, clinicName = "Sunrise Clinic"
           <div className="grid grid-cols-2 gap-4">
             <div className="p-5 bg-slate-900/80 border border-white/10 rounded-2xl flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-400 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider">Position</span>
+                <span className="text-xs font-bold uppercase tracking-wider">{t("status.position")}</span>
                 <Users className="w-4 h-4 text-blue-400" />
               </div>
               <div className="text-3xl font-black font-sans text-white">
-                {isCalled ? "0 (Next)" : `${positionInLine} in line`}
+                {isCalled ? t("status.next") : t("status.inLine", { n: positionInLine })}
               </div>
-              <span className="text-[10px] text-slate-400 font-medium mt-1">Live queue status</span>
+              <span className="text-[10px] text-slate-400 font-medium mt-1">{t("status.liveQueueStatus")}</span>
             </div>
 
             <div className="p-5 bg-slate-900/80 border border-white/10 rounded-2xl flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-400 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider">Est. Wait</span>
+                <span className="text-xs font-bold uppercase tracking-wider">{t("status.estWait")}</span>
                 <Clock className="w-4 h-4 text-purple-400" />
               </div>
               <div className="text-3xl font-black font-sans text-white">
-                {isCalled ? "0m" : `~${estWaitMins}m`}
+                {isCalled ? t("status.zeroWait") : t("status.estWaitValue", { n: estWaitMins })}
               </div>
-              <span className="text-[10px] text-slate-400 font-medium mt-1">Updated in real-time</span>
+              <span className="text-[10px] text-slate-400 font-medium mt-1">{t("status.updatedRealtime")}</span>
             </div>
           </div>
         )}
 
         {/* Queue Visualizer Graph */}
         <div className="bg-slate-900/80 border border-white/10 rounded-3xl p-5 shadow-xl">
-          <h3 className="text-sm font-bold text-white mb-3">Live Queue Position Graph</h3>
+          <h3 className="text-sm font-bold text-white mb-3">{t("status.positionGraph")}</h3>
           <LiveQueueGraph items={items} />
         </div>
 
@@ -187,10 +191,10 @@ export function PatientStatusPage({ initialTicket, clinicName = "Sunrise Clinic"
         <div className="p-5 bg-slate-900/80 border border-white/10 rounded-3xl space-y-3 text-xs">
           <div className="flex items-center gap-2 text-slate-300 font-bold">
             <MessageSquare className="w-4 h-4 text-accent" />
-            <span>Notification Preferences</span>
+            <span>{t("status.notificationPrefs")}</span>
           </div>
           <div className="flex items-center justify-between py-1">
-            <span className="text-slate-400">Receive WhatsApp Instant Ticket Updates</span>
+            <span className="text-slate-400">{t("status.whatsappUpdates")}</span>
             <input
               type="checkbox"
               checked={whatsappConsent}

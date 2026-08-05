@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 import { History, Loader2, Star, X } from "lucide-react";
 import { portalApi } from "@/lib/portal/client";
 import { PortalCard, SectionTitle, StatusPill, EmptyState, LoadingBlock } from "@/components/portal/ui";
-import { formatDate } from "./DashboardSection";
+import { formatDate } from "@/lib/i18n/format";
 
 interface Visit {
   id: string;
@@ -19,6 +20,7 @@ interface Visit {
 }
 
 export function VisitsSection() {
+  const { t, i18n } = useTranslation();
   const [visits, setVisits] = useState<Visit[] | null>(null);
   const [ratedTicketIds, setRatedTicketIds] = useState<Set<string>>(new Set());
   const [ratingTarget, setRatingTarget] = useState<Visit | null>(null);
@@ -42,21 +44,21 @@ export function VisitsSection() {
     fetchVisits();
   }, [fetchVisits]);
 
-  if (visits === null) return <LoadingBlock label="Loading visit history..." />;
+  if (visits === null) return <LoadingBlock label={t("visits.loading")} />;
 
   if (visits.length === 0) {
     return (
       <EmptyState
         icon={<History className="w-6 h-6" />}
-        title="No visits yet"
-        subtitle="Your past visits will appear here — date, doctor, department and status."
+        title={t("visits.empty")}
+        subtitle={t("visits.emptySub")}
       />
     );
   }
 
   return (
     <div className="space-y-5">
-      <SectionTitle title="Visit History" subtitle="Chronological list of your past visits" />
+      <SectionTitle title={t("visits.title")} subtitle={t("visits.subtitle")} />
 
       <div className="space-y-3">
         {visits.map((v) => {
@@ -68,12 +70,12 @@ export function VisitsSection() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-bold text-white truncate">
-                      {v.queues?.doctor_name || v.queues?.name || "Visit"}
+                      {v.queues?.doctor_name || v.queues?.name || t("visits.visit")}
                     </p>
-                    <span className="text-[10px] font-bold text-slate-500">Token #{v.token_number}</span>
+                    <span className="text-[10px] font-bold text-slate-500">{t("visits.token", { n: v.token_number })}</span>
                   </div>
                   <p className="text-[11px] text-slate-400 font-medium mt-1">
-                    {v.queues?.department || "General"} · {formatDate((v.served_at || v.joined_at).slice(0, 10))}
+                    {v.queues?.department || t("visits.general")} · {formatDate((v.served_at || v.joined_at).slice(0, 10), i18n.language)}
                   </p>
                   <div className="mt-2.5">
                     <StatusPill status={v.status} />
@@ -82,14 +84,14 @@ export function VisitsSection() {
                 <div className="shrink-0">
                   {rated ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-300">
-                      <Star className="w-3.5 h-3.5 fill-emerald-400 text-emerald-400" /> Rated
+                      <Star className="w-3.5 h-3.5 fill-emerald-400 text-emerald-400" /> {t("visits.rated")}
                     </span>
                   ) : canRate ? (
                     <button
                       onClick={() => setRatingTarget(v)}
                       className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-300 border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-2 rounded-xl transition-all"
                     >
-                      <Star className="w-3.5 h-3.5" /> Rate
+                      <Star className="w-3.5 h-3.5" /> {t("visits.rate")}
                     </button>
                   ) : null}
                 </div>
@@ -122,6 +124,7 @@ function RateVisitModal({
   onClose: () => void;
   onDone: () => void;
 }) {
+  const { t } = useTranslation();
   const [value, setValue] = useState(0);
   const [hover, setHover] = useState(0);
   const [comment, setComment] = useState("");
@@ -129,7 +132,7 @@ function RateVisitModal({
 
   const submit = async () => {
     if (value < 1) {
-      toast.error("Tap a star to rate your visit");
+      toast.error(t("visits.tapStar"));
       return;
     }
     setSaving(true);
@@ -143,14 +146,14 @@ function RateVisitModal({
           comment: comment.trim() || null,
         }),
       });
-      toast.success("Thanks for your feedback!");
+      toast.success(t("visits.thanks"));
       onDone();
     } catch (e: any) {
       if (e?.status === 409) {
-        toast.error("You already rated this visit");
+        toast.error(t("visits.alreadyRated"));
         onDone();
       } else {
-        toast.error(e?.message || "Failed to submit rating");
+        toast.error(e?.message || t("visits.failed"));
       }
     } finally {
       setSaving(false);
@@ -164,13 +167,16 @@ function RateVisitModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-1">
-          <p className="text-lg font-extrabold text-white">Rate your visit</p>
+          <p className="text-lg font-extrabold text-white">{t("visits.rateTitle")}</p>
           <button onClick={onClose} className="text-slate-400 hover:text-white">
             <X className="w-5 h-5" />
           </button>
         </div>
         <p className="text-xs text-slate-400 font-medium mb-5">
-          {visit.queues?.doctor_name || visit.queues?.name || "Your doctor"} · Token #{visit.token_number}
+          {t("visits.doctorToken", {
+            doctor: visit.queues?.doctor_name || visit.queues?.name || t("visits.visit"),
+            n: visit.token_number,
+          })}
         </p>
 
         <div className="flex items-center justify-center gap-2 mb-5" onMouseLeave={() => setHover(0)}>
@@ -194,7 +200,7 @@ function RateVisitModal({
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder="Share a short comment (optional)"
+          placeholder={t("visits.commentPlaceholder")}
           rows={3}
           className="w-full bg-black/30 border border-white/10 text-white text-sm rounded-xl px-3.5 py-3 focus:outline-none focus:border-blue-400 resize-none placeholder:text-slate-500"
         />
@@ -205,7 +211,7 @@ function RateVisitModal({
           className="mt-4 w-full bg-amber-500 hover:bg-amber-400 text-slate-950 text-sm font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-          Submit Rating
+          {t("visits.submitRating")}
         </button>
       </div>
     </div>

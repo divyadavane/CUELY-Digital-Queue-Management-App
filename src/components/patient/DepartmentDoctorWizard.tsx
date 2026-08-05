@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { createClient } from "@/lib/supabase";
 import { Database } from "@/types/database";
 import { Stethoscope, User, Clock, Users, ArrowLeft, ChevronRight, Activity, Smile, Search } from "lucide-react";
@@ -26,6 +27,7 @@ const icons: Record<string, React.ReactNode> = {
 };
 
 export function DepartmentDoctorWizard({ onComplete, businessId, isKiosk }: DepartmentDoctorWizardProps) {
+  const { t } = useTranslation();
   const [queues, setQueues] = useState<Queue[]>([]);
   const [statusMap, setStatusMap] = useState<Record<string, QueueStatus>>({});
   const [loading, setLoading] = useState(true);
@@ -87,7 +89,7 @@ export function DepartmentDoctorWizard({ onComplete, businessId, isKiosk }: Depa
   const departments = useMemo(() => {
     const depts = new Map<string, { name: string; totalWaiting: number; avgWaitSeconds: number; queueCount: number }>();
     queues.forEach((q) => {
-      const deptName = q.department || "Other";
+      const deptName = q.department || t("wizard.other");
       const status = statusMap[q.id] || { total_waiting: 0, avg_serving_seconds: 300 };
       
       if (!depts.has(deptName)) {
@@ -103,7 +105,7 @@ export function DepartmentDoctorWizard({ onComplete, businessId, isKiosk }: Depa
       ...d,
       avgWaitSeconds: d.queueCount > 0 ? d.avgWaitSeconds / d.queueCount : 300
     })).sort((a, b) => a.totalWaiting - b.totalWaiting); // Shortest wait first
-  }, [queues, statusMap]);
+  }, [queues, statusMap, t]);
 
   if (loading) {
     return (
@@ -116,8 +118,8 @@ export function DepartmentDoctorWizard({ onComplete, businessId, isKiosk }: Depa
   const renderDepartments = () => (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="text-center mb-8">
-        <h2 className={`font-bold font-sans text-foreground mb-3 tracking-tight ${isKiosk ? "text-4xl" : "text-3xl"}`}>Select Department</h2>
-        <p className={`text-muted-foreground ${isKiosk ? "text-xl" : "text-sm"}`}>Choose the department you need to visit.</p>
+        <h2 className={`font-bold font-sans text-foreground mb-3 tracking-tight ${isKiosk ? "text-4xl" : "text-3xl"}`}>{t("wizard.selectDept")}</h2>
+        <p className={`text-muted-foreground ${isKiosk ? "text-xl" : "text-sm"}`}>{t("wizard.selectDeptSub")}</p>
       </div>
 
       <div className={`grid gap-4 ${isKiosk ? "grid-cols-2 md:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"}`}>
@@ -141,7 +143,7 @@ export function DepartmentDoctorWizard({ onComplete, businessId, isKiosk }: Depa
             <h3 className={`font-bold text-foreground mb-2 ${isKiosk ? "text-2xl" : "text-lg"}`}>{dept.name}</h3>
             <div className="flex items-center gap-2 bg-background px-3 py-1.5 rounded-full border border-border mt-2">
               <Users className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">{dept.totalWaiting} waiting</span>
+              <span className="text-sm font-medium">{t("wizard.waiting", { n: dept.totalWaiting })}</span>
             </div>
           </button>
         ))}
@@ -164,7 +166,7 @@ export function DepartmentDoctorWizard({ onComplete, businessId, isKiosk }: Depa
             <ArrowLeft className="w-6 h-6 text-foreground" />
           </button>
           <div>
-            <h2 className={`font-bold font-sans text-foreground tracking-tight ${isKiosk ? "text-4xl" : "text-2xl"}`}>Select Doctor</h2>
+            <h2 className={`font-bold font-sans text-foreground tracking-tight ${isKiosk ? "text-4xl" : "text-2xl"}`}>{t("wizard.selectDoctor")}</h2>
             <p className="text-muted-foreground">{selectedDept}</p>
           </div>
         </div>
@@ -199,7 +201,7 @@ export function DepartmentDoctorWizard({ onComplete, businessId, isKiosk }: Depa
                   </div>
                   {isFastest && !isOffline && (
                     <span className="bg-green-500/10 text-green-600 border border-green-500/20 text-xs font-bold px-2 py-1 rounded-full whitespace-nowrap">
-                      Fastest
+                      {t("wizard.fastest")}
                     </span>
                   )}
                 </div>
@@ -208,11 +210,11 @@ export function DepartmentDoctorWizard({ onComplete, businessId, isKiosk }: Depa
                   <div className="flex gap-4">
                     <div className="flex items-center gap-1.5 text-sm">
                       <Users className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium">{status.total_waiting} ahead</span>
+                      <span className="font-medium">{t("wizard.ahead", { n: status.total_waiting })}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-sm">
                       <Clock className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium">~{estWaitMins}m wait</span>
+                      <span className="font-medium">{t("wizard.wait", { n: estWaitMins })}</span>
                     </div>
                   </div>
                   
@@ -223,7 +225,7 @@ export function DepartmentDoctorWizard({ onComplete, businessId, isKiosk }: Depa
                       q.status === 'on break' ? 'bg-gray-400' : 'bg-red-500'
                     }`} />
                     <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                      {q.status}
+                      {q.status === "available" ? t("wizard.available") : q.status === "busy" ? t("wizard.busy") : q.status === "on break" ? t("wizard.onBreak") : t("wizard.offline")}
                     </span>
                   </div>
                 </div>

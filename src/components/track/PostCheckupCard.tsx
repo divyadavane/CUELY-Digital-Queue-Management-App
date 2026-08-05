@@ -1,4 +1,7 @@
+"use client";
+
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import confetti from "canvas-confetti";
 import { Star } from "lucide-react";
 
@@ -8,6 +11,7 @@ interface PostCheckupCardProps {
 }
 
 export function PostCheckupCard({ ticket, onClear }: PostCheckupCardProps) {
+  const { t } = useTranslation();
   const [showContent, setShowContent] = useState(false);
   const [showRating, setShowRating] = useState(false);
 
@@ -53,7 +57,7 @@ export function PostCheckupCard({ ticket, onClear }: PostCheckupCardProps) {
   if (showRating) {
     return (
       <div className="w-full max-w-md mx-auto bg-surface/80 backdrop-blur-md border border-accent/20 rounded-[32px] p-10 text-center shadow-[0_8px_32px_-12px_rgba(99,102,241,0.2)] animate-in zoom-in-95 duration-500">
-        <h2 className="text-2xl font-bold font-sans text-foreground mb-6">How was your visit?</h2>
+        <h2 className="text-2xl font-bold font-sans text-foreground mb-6">{t("postcheckup.howVisit")}</h2>
         <div className="flex justify-center gap-2 mb-8">
           {[1, 2, 3, 4, 5].map((star) => (
             <button key={star} onClick={onClear} className="text-muted-foreground hover:text-yellow-400 hover:scale-110 transition-all">
@@ -61,8 +65,8 @@ export function PostCheckupCard({ ticket, onClear }: PostCheckupCardProps) {
             </button>
           ))}
         </div>
-        <p className="text-sm text-muted-foreground mb-6">Your feedback helps us improve.</p>
-        <button onClick={onClear} className="text-sm font-bold text-muted-foreground hover:text-foreground">Skip</button>
+        <p className="text-sm text-muted-foreground mb-6">{t("postcheckup.feedbackHelps")}</p>
+        <button onClick={onClear} className="text-sm font-bold text-muted-foreground hover:text-foreground">{t("postcheckup.skip")}</button>
       </div>
     );
   }
@@ -96,14 +100,14 @@ export function PostCheckupCard({ ticket, onClear }: PostCheckupCardProps) {
 
       {/* Staggered Content */}
       <div className={`transition-all duration-700 transform ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-        <h2 className="text-3xl font-bold font-sans text-foreground mb-2 tracking-tight">Visit Complete</h2>
+        <h2 className="text-3xl font-bold font-sans text-foreground mb-2 tracking-tight">{t("postcheckup.visitComplete")}</h2>
         <p className="text-muted-foreground mb-6">
-          Your visit at {ticket.queues?.name || "the clinic"} is complete.
+          {t("postcheckup.visitCompleteMsg", { clinic: ticket.queues?.name || "the clinic" })}
         </p>
 
         <div className="bg-background rounded-2xl p-4 mb-8 border border-border inline-block min-w-[200px]">
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Token {ticket.token_number}</p>
-          <p className="text-lg font-bold text-foreground">Seen in {waitTimeMinutes} mins</p>
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">{t("postcheckup.token", { n: ticket.token_number })}</p>
+          <p className="text-lg font-bold text-foreground">{t("postcheckup.seenIn", { n: waitTimeMinutes })}</p>
         </div>
 
         {/* Progress Tracker */}
@@ -113,24 +117,24 @@ export function PostCheckupCard({ ticket, onClear }: PostCheckupCardProps) {
           
           <div className="flex flex-col items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-accent border-4 border-surface" />
-            <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Joined</span>
+            <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">{t("postcheckup.joined")}</span>
           </div>
           <div className="flex flex-col items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-accent border-4 border-surface" />
-            <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Wait</span>
+            <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">{t("postcheckup.wait")}</span>
           </div>
           <div className="flex flex-col items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-accent border-4 border-surface shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-            <span className="text-[10px] font-bold text-accent uppercase tracking-wider">Seen</span>
+            <span className="text-[10px] font-bold text-accent uppercase tracking-wider">{t("postcheckup.seen")}</span>
           </div>
         </div>
 
         <div className="flex flex-col gap-3">
           <button onClick={() => setShowRating(true)} className="w-full bg-accent text-white font-bold py-3.5 rounded-xl hover:brightness-110 active:scale-[0.98] transition-all text-sm flex items-center justify-center gap-2">
-            <Star className="w-4 h-4" /> Rate your experience
+            <Star className="w-4 h-4" /> {t("postcheckup.rateExperience")}
           </button>
           <button onClick={onClear} className="w-full bg-transparent text-foreground border border-border font-bold py-3.5 rounded-xl hover:bg-muted active:scale-[0.98] transition-all text-sm">
-            Return to Home
+            {t("postcheckup.returnHome")}
           </button>
         </div>
       </div>

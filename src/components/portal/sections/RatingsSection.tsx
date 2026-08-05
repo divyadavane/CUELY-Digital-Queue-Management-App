@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Star } from "lucide-react";
 import { portalApi } from "@/lib/portal/client";
 import { PortalCard, SectionTitle, StatusPill, EmptyState, LoadingBlock } from "@/components/portal/ui";
-import { formatDate } from "./DashboardSection";
+import { formatDate } from "@/lib/i18n/format";
 import { RatingStars } from "@/components/ui/RatingStars";
 
 interface MyRating {
@@ -16,6 +17,7 @@ interface MyRating {
 }
 
 export function RatingsSection() {
+  const { t, i18n } = useTranslation();
   const [ratings, setRatings] = useState<MyRating[] | null>(null);
 
   const fetchRatings = useCallback(async () => {
@@ -31,17 +33,17 @@ export function RatingsSection() {
     fetchRatings();
   }, [fetchRatings]);
 
-  if (ratings === null) return <LoadingBlock label="Loading your ratings..." />;
+  if (ratings === null) return <LoadingBlock label={t("ratings.loading")} />;
 
   return (
     <div className="space-y-5">
-      <SectionTitle title="My Ratings" subtitle="The stars you gave your doctors" />
+      <SectionTitle title={t("ratings.title")} subtitle={t("ratings.subtitle")} />
 
       {ratings.length === 0 ? (
         <EmptyState
           icon={<Star className="w-6 h-6" />}
-          title="No ratings yet"
-          subtitle="After a completed visit, you can rate your doctor right from your visit history."
+          title={t("ratings.empty")}
+          subtitle={t("ratings.emptySub")}
         />
       ) : (
         <div className="space-y-3">
@@ -49,10 +51,10 @@ export function RatingsSection() {
             <PortalCard key={r.id} className="p-5">
               <div className="flex items-center justify-between gap-3 mb-2">
                 <p className="text-sm font-bold text-white truncate">
-                  {r.queues?.doctor_name || r.queues?.name || "Doctor"}
+                  {r.queues?.doctor_name || r.queues?.name || t("ratings.doctor")}
                 </p>
                 <span className="text-[10px] font-semibold text-slate-500 shrink-0">
-                  {formatDate(r.created_at.slice(0, 10))}
+                  {formatDate(r.created_at.slice(0, 10), i18n.language)}
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
@@ -60,7 +62,7 @@ export function RatingsSection() {
                 <span className="text-xs font-bold text-amber-300">{r.rating_value}.0</span>
               </div>
               <div className="flex items-center gap-2 mt-3">
-                <p className="text-[11px] text-slate-400">{r.queues?.department || "General"}</p>
+                <p className="text-[11px] text-slate-400">{r.queues?.department || t("ratings.general")}</p>
                 <StatusPill status={`${r.rating_value}star`} label={`${r.rating_value}★`} />
               </div>
               {r.comment && (

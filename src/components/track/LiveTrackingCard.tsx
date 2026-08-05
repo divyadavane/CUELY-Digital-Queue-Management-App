@@ -1,4 +1,7 @@
+"use client";
+
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Check, XCircle, AlertCircle } from "lucide-react";
 import { LeaveQueueButton } from "./LeaveQueueButton";
 import { PostCheckupCard } from "./PostCheckupCard";
@@ -12,6 +15,7 @@ interface LiveTrackingCardProps {
 }
 
 export function LiveTrackingCard({ ticket, position, estimatedWaitMinutes, onClear, isStale }: LiveTrackingCardProps) {
+  const { t } = useTranslation();
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -32,13 +36,13 @@ export function LiveTrackingCard({ ticket, position, estimatedWaitMinutes, onCle
         <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-6">
           <XCircle className="w-10 h-10 text-destructive" />
         </div>
-        <h2 className="text-2xl font-bold font-sans text-foreground mb-3">Ticket Closed</h2>
+        <h2 className="text-2xl font-bold font-sans text-foreground mb-3">{t("track.ticketClosed")}</h2>
         <p className="text-muted-foreground mb-8">
-          {ticket.status === "no_show" 
-            ? "This ticket was marked as a no-show." 
-            : "You left the queue."}
+          {ticket.status === "no_show"
+            ? t("track.noShow")
+            : t("track.leftQueue")}
         </p>
-        <button onClick={onClear} className="text-accent font-bold hover:underline">Join Queue Again</button>
+        <button onClick={onClear} className="text-accent font-bold hover:underline">{t("track.joinAgain")}</button>
       </div>
     );
   }
@@ -55,7 +59,7 @@ export function LiveTrackingCard({ ticket, position, estimatedWaitMinutes, onCle
         {isStale && !isCalled && (
           <div className="flex items-center justify-center gap-2 text-orange-500 text-sm font-bold bg-orange-500/10 py-1.5 px-4 rounded-full w-fit mx-auto mb-6">
             <AlertCircle className="w-4 h-4" />
-            Reconnecting...
+            {t("track.reconnecting")}
           </div>
         )}
 
@@ -71,7 +75,7 @@ export function LiveTrackingCard({ ticket, position, estimatedWaitMinutes, onCle
 
         <div className="mb-2">
           <p className={`text-sm font-bold uppercase tracking-wider ${isCalled ? "text-white/80" : "text-muted-foreground"}`}>
-            Your Token Number
+            {t("track.yourToken")}
           </p>
         </div>
         
@@ -81,11 +85,11 @@ export function LiveTrackingCard({ ticket, position, estimatedWaitMinutes, onCle
 
         {isCalled ? (
           <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h2 className="text-3xl font-bold tracking-tight">You're being called!</h2>
-            <p className="text-xl text-white/90">Please come to the desk immediately.</p>
+            <h2 className="text-3xl font-bold tracking-tight">{t("track.beingCalled")}</h2>
+            <p className="text-xl text-white/90">{t("track.comeToDesk")}</p>
             {ticket.recall_count > 0 && (
               <p className="text-sm font-bold bg-white/20 px-3 py-1 rounded-full inline-block mt-4">
-                We called you again ({ticket.recall_count})
+                {t("track.calledAgain", { n: ticket.recall_count })}
               </p>
             )}
           </div>
@@ -93,28 +97,28 @@ export function LiveTrackingCard({ ticket, position, estimatedWaitMinutes, onCle
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-background rounded-2xl p-4 border border-border">
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Position</p>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">{t("track.position")}</p>
                 <p className="text-3xl font-bold text-foreground">
                   {position ? `#${position}` : "--"}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {position && position > 1 ? `${position - 1} ahead` : "You're next!"}
+                  {position && position > 1 ? t("track.ahead", { n: position - 1 }) : t("track.youreNext")}
                 </p>
               </div>
               <div className="bg-background rounded-2xl p-4 border border-border">
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Est. Wait</p>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">{t("track.estWait")}</p>
                 <p className="text-3xl font-bold text-foreground">
                   ~{estimatedWaitMinutes}<span className="text-lg">m</span>
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Average time
+                  {t("track.avgTime")}
                 </p>
               </div>
             </div>
 
             <div className="text-xs font-medium text-muted-foreground pt-4 flex items-center justify-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-green-500" />
-              Live • Updated {now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {t("track.liveUpdated", { time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) })}
             </div>
           </div>
         )}
