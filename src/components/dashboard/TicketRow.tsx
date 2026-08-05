@@ -10,6 +10,7 @@ import { useUndoableAction } from "@/hooks/useUndoableAction";
 import { recallTicketAction } from "@/actions/queue";
 import { calculateUrgency } from "@/lib/urgency";
 import { TransferTicketModal } from "./TransferTicketModal";
+import { BillStatusBadge, BillingDetailSection, BillInfo } from "./BillStatusBadge";
 
 type Ticket = Database["public"]["Tables"]["tickets"]["Row"];
 type Queue = Database["public"]["Tables"]["queues"]["Row"];
@@ -19,13 +20,15 @@ interface TicketRowProps {
   adminRole?: string;
   currentUserId?: string;
   queues?: Queue[];
+  bill?: BillInfo | null;
 }
 
-export function TicketRow({ ticket, adminRole, currentUserId, queues = [] }: TicketRowProps) {
+export function TicketRow({ ticket, adminRole, currentUserId, queues = [], bill }: TicketRowProps) {
   const [loadingAction, setLoadingAction] = useState<"serve" | "noshow" | "recall" | null>(null);
   const [timeWaiting, setTimeWaiting] = useState<string>("");
   const [showTooltip, setShowTooltip] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
+  const [showBilling, setShowBilling] = useState(false);
   const supabase = createClient();
   const { executeActionWithUndo } = useUndoableAction();
 
@@ -109,6 +112,18 @@ export function TicketRow({ ticket, adminRole, currentUserId, queues = [] }: Tic
             >
               {ticket.status}
             </span>
+
+            {/* Billing Status Badge (read-only) */}
+            {bill && (
+              <button
+                type="button"
+                onClick={() => setShowBilling((v) => !v)}
+                className={`${bill.status === "pending" ? "animate-pulse" : ""} focus:outline-none`}
+                title="View billing details (read-only)"
+              >
+                <BillStatusBadge status={bill.status} />
+              </button>
+            )}
 
             {/* Urgency Pill Badge */}
             <div className="relative inline-block">
@@ -204,6 +219,9 @@ export function TicketRow({ ticket, adminRole, currentUserId, queues = [] }: Tic
           </p>
         </div>
       </div>
+
+      {/* Read-only billing detail (expands inline) */}
+      {showBilling && bill && <BillingDetailSection bill={bill} />}
 
       {/* Actions */}
       <div className="flex items-center gap-2 shrink-0 max-w-full overflow-hidden">

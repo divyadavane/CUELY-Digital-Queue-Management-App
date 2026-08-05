@@ -81,6 +81,12 @@ export default function TrackPage() {
           <span className="text-xs font-semibold px-3 py-1 bg-surface border border-border rounded-full text-muted-foreground">
             {queue.name}
           </span>
+          <Link
+            href="/portal/login"
+            className="text-xs font-bold px-3 py-1 bg-accent/10 border border-accent/30 text-accent rounded-full hover:bg-accent/20 transition-all"
+          >
+            My Portal
+          </Link>
         </div>
       </header>
 

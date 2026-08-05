@@ -1,5 +1,8 @@
+"use client";
+
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 import { checkInAppointmentAction, cancelAppointmentAction } from "@/actions/queue";
 import { Calendar, CheckCircle2, XCircle } from "lucide-react";
 
@@ -16,6 +19,7 @@ export function CheckInPrompt({
   onCheckedIn,
   onCancelled,
 }: CheckInPromptProps) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const today = new Date().toISOString().split("T")[0];
   const isToday = appointmentDate <= today; // Allowed to check in on or after scheduled date
@@ -25,32 +29,32 @@ export function CheckInPrompt({
     const { success, data, error } = await checkInAppointmentAction(appointmentId);
 
     if (!success) {
-      toast.error(error || "Failed to check in");
+      toast.error(error || t("checkin.failed"));
       setLoading(false);
       return;
     }
 
     if (data && data.ticket_id) {
-      toast.success("Checked in! You are now in the live queue.");
+      toast.success(t("checkin.checkedIn"));
       onCheckedIn(data.ticket_id);
     } else {
-      toast.error("Could not retrieve queue ticket.");
+      toast.error(t("checkin.noTicket"));
     }
     setLoading(false);
   };
 
   const handleCancel = async () => {
-    if (!confirm("Are you sure you want to cancel this appointment?")) return;
+    if (!confirm(t("checkin.confirmCancel"))) return;
     setLoading(true);
     const { success, error } = await cancelAppointmentAction(appointmentId);
 
     if (!success) {
-      toast.error(error || "Failed to cancel appointment");
+      toast.error(error || t("checkin.failedCancel"));
       setLoading(false);
       return;
     }
 
-    toast.success("Appointment cancelled.");
+    toast.success(t("checkin.cancelled"));
     onCancelled();
     setLoading(false);
   };
@@ -62,17 +66,17 @@ export function CheckInPrompt({
       </div>
 
       <h2 className="text-3xl font-bold font-sans text-foreground mb-2 tracking-tight">
-        Existing Appointment
+        {t("checkin.title")}
       </h2>
       <p className="text-muted-foreground text-base mb-6">
-        You have an appointment booked for <strong className="text-foreground">{appointmentDate}</strong>.
+        {t("checkin.youHaveAppt", { date: appointmentDate })}
       </p>
 
       {isToday ? (
         <div className="space-y-4">
           <div className="bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 p-4 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2">
             <CheckCircle2 className="w-5 h-5" />
-            Check-in is open for today!
+            {t("checkin.checkInOpen")}
           </div>
 
           <button
@@ -81,12 +85,12 @@ export function CheckInPrompt({
             className="w-full bg-accent text-white font-bold py-4 rounded-xl hover:brightness-110 active:scale-[0.98] transition-all text-lg flex items-center justify-center gap-3 disabled:opacity-50"
           >
             {loading && <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-            Check In Now
+            {t("checkin.checkInNow")}
           </button>
         </div>
       ) : (
         <div className="bg-muted p-4 rounded-2xl text-sm text-muted-foreground mb-6">
-          Check-in will be available when you arrive on <strong className="text-foreground">{appointmentDate}</strong>.
+          {t("checkin.checkInAvailableOn", { date: appointmentDate })}
         </div>
       )}
 
@@ -96,7 +100,7 @@ export function CheckInPrompt({
         className="mt-6 text-sm font-semibold text-destructive hover:underline inline-flex items-center gap-1.5"
       >
         <XCircle className="w-4 h-4" />
-        Cancel Appointment
+        {t("checkin.cancelAppointment")}
       </button>
     </div>
   );

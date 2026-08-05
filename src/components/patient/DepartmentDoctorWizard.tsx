@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase";
 import { Database } from "@/types/database";
 import { Stethoscope, User, Clock, Users, ArrowLeft, ChevronRight, Activity, Smile, Search } from "lucide-react";
+import { DoctorRatingBadge } from "@/components/ui/DoctorRatingBadge";
 
 type Queue = Database["public"]["Tables"]["queues"]["Row"];
 
@@ -192,6 +193,9 @@ export function DepartmentDoctorWizard({ onComplete, businessId, isKiosk }: Depa
                       {q.doctor_name || q.name}
                     </h3>
                     <p className="text-sm text-muted-foreground">{q.counter_number}</p>
+                    <div className="mt-1.5">
+                      <DoctorRatingBadge queueId={q.id} />
+                    </div>
                   </div>
                   {isFastest && !isOffline && (
                     <span className="bg-green-500/10 text-green-600 border border-green-500/20 text-xs font-bold px-2 py-1 rounded-full whitespace-nowrap">

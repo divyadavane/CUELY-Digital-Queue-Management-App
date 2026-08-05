@@ -5,6 +5,7 @@ import { TicketRow } from "./TicketRow";
 import { Database } from "@/types/database";
 import { InboxIcon, ArrowUpDown, ShieldAlert, Clock } from "lucide-react";
 import { calculateUrgency } from "@/lib/urgency";
+import { BillInfo } from "./BillStatusBadge";
 
 type Ticket = Database["public"]["Tables"]["tickets"]["Row"];
 type Queue = Database["public"]["Tables"]["queues"]["Row"];
@@ -16,6 +17,7 @@ interface QueueListProps {
   adminRole?: string;
   currentUserId?: string;
   queues?: Queue[];
+  billsByTicket?: Record<string, BillInfo>;
 }
 
 export function QueueList({
@@ -25,6 +27,7 @@ export function QueueList({
   adminRole,
   currentUserId,
   queues = [],
+  billsByTicket = {},
 }: QueueListProps) {
   const [sortBy, setSortBy] = useState<"arrival" | "urgency">("urgency");
 
@@ -133,6 +136,7 @@ export function QueueList({
               adminRole={adminRole}
               currentUserId={currentUserId}
               queues={queues}
+              bill={billsByTicket[calledTicket.id] || null}
             />
           </div>
         )}
@@ -144,6 +148,7 @@ export function QueueList({
             adminRole={adminRole}
             currentUserId={currentUserId}
             queues={queues}
+            bill={billsByTicket[ticket.id] || null}
           />
         ))}
       </div>

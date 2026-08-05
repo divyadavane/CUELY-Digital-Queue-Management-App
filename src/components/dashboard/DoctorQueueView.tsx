@@ -3,8 +3,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase";
 import { Database } from "@/types/database";
+import { useDoctorRating } from "@/hooks/useDoctorRating";
+import { RatingStars } from "@/components/ui/RatingStars";
 import { TicketRow } from "./TicketRow";
 import { TransferTicketModal } from "./TransferTicketModal";
+import { AppointmentsPanel } from "./AppointmentsPanel";
+import { BillInfo } from "./BillStatusBadge";
 import {
   Stethoscope,
   Clock,
@@ -17,6 +21,7 @@ import {
   Building2,
   ShieldAlert,
   ArrowRightLeft,
+  Star,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -57,11 +62,14 @@ export function DoctorQueueView({ queues }: DoctorQueueViewProps) {
 
   const [activeDoctorId, setActiveDoctorId] = useState<string>("doc-1");
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [billsByTicket, setBillsByTicket] = useState<Record<string, BillInfo>>({});
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<"arrival" | "urgency">("urgency");
 
   const activeDoctor = doctors.find((d) => d.id === activeDoctorId) || doctors[0];
   const supabase = createClient();
+  const { avgRating, totalRatings } = useDoctorRating(activeDoctor?.queueId);
+  const activeQueue = queues.find((q) => q.id === activeDoctor?.queueId);
 
   // Fetch active doctor's queue tickets
   const fetchDoctorQueue = useCallback(async () => {
@@ -85,8 +93,25 @@ export function DoctorQueueView({ queues }: DoctorQueueViewProps) {
     }
   }, [activeDoctor.queueId, supabase]);
 
+  // Fetch read-only billing status for the active doctor's queue
+  const fetchBills = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/dashboard/bills?queueId=${activeDoctor.queueId}`);
+      if (!res.ok) return;
+      const { bills } = await res.json();
+      const map: Record<string, BillInfo> = {};
+      (bills || []).forEach((b: BillInfo) => {
+        if (b.ticket_id) map[b.ticket_id] = b;
+      });
+      setBillsByTicket(map);
+    } catch (e) {
+      console.error("Failed to fetch bills:", e);
+    }
+  }, [activeDoctor.queueId]);
+
   useEffect(() => {
     fetchDoctorQueue();
+    fetchBills();
 
     // Subscribe to realtime updates for doctor's queue
     const channel = supabase
@@ -105,10 +130,31 @@ export function DoctorQueueView({ queues }: DoctorQueueViewProps) {
       )
       .subscribe();
 
+    // Real-time billing: refresh when a bill is created/updated for this queue's tickets
+    let billsChannel: any = null;
+    if (activeQueue?.business_id) {
+      billsChannel = supabase
+        .channel(`public:bills:doctor:${activeDoctor.queueId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "bills",
+            filter: `business_id=eq.${activeQueue.business_id}`,
+          },
+          () => {
+            fetchBills();
+          }
+        )
+        .subscribe();
+    }
+
     return () => {
       supabase.removeChannel(channel);
+      if (billsChannel) supabase.removeChannel(billsChannel);
     };
-  }, [fetchDoctorQueue, activeDoctor.queueId, supabase]);
+  }, [fetchDoctorQueue, fetchBills, activeDoctor.queueId, activeQueue?.business_id, supabase]);
 
   // Toggle Doctor Queue Pause / Break
   const toggleQueuePause = () => {
@@ -167,6 +213,16 @@ export function DoctorQueueView({ queues }: DoctorQueueViewProps) {
             </select>
           </div>
 
+          {/* Active Doctor Rating Chip */}
+          <div
+            className="flex items-center gap-2 bg-slate-900 border border-amber-500/30 px-4 py-2.5 rounded-2xl text-xs font-bold shadow-lg"
+            title={`${activeDoctor.name}'s rating`}
+          >
+            <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+            <span className="text-amber-400 font-black text-sm">{avgRating.toFixed(1)}</span>
+            <span className="text-slate-400 font-semibold">({totalRatings})</span>
+          </div>
+
           {/* Queue Break / Pause Toggle Button */}
           <button
             onClick={toggleQueuePause}
@@ -199,6 +255,29 @@ export function DoctorQueueView({ queues }: DoctorQueueViewProps) {
           </button>
         </div>
       )}
+
+      {/* Doctor Rating Banner */}
+      <div className="bg-slate-900/80 border border-white/10 rounded-3xl p-6 shadow-xl flex flex-wrap items-center justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shadow-lg shadow-amber-500/20">
+            <Star className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase text-slate-400 mb-1">
+              {activeDoctor.name}&apos;s Rating
+            </p>
+            <div className="flex items-center gap-2.5">
+              <RatingStars value={avgRating} size="md" />
+              <span className="text-2xl font-black text-white">{avgRating.toFixed(1)}</span>
+              <span className="text-xs font-medium text-slate-400">
+                {totalRatings > 0
+                  ? `· ${totalRatings} ${totalRatings === 1 ? "review" : "reviews"}`
+                  : "· No ratings yet"}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Scoped Doctor Stat Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -290,11 +369,20 @@ export function DoctorQueueView({ queues }: DoctorQueueViewProps) {
             </div>
           ) : (
             tickets.map((t) => (
-              <TicketRow key={t.id} ticket={t} queues={queues} adminRole="owner" />
+              <TicketRow key={t.id} ticket={t} queues={queues} adminRole="owner" bill={billsByTicket[t.id] || null} />
             ))
           )}
         </div>
       </div>
+
+      {/* Booked Appointments */}
+      {activeDoctor && (
+        <AppointmentsPanel
+          queueId={activeDoctor.queueId}
+          doctorName={activeDoctor.name}
+          onCheckedIn={fetchDoctorQueue}
+        />
+      )}
     </div>
   );
 }

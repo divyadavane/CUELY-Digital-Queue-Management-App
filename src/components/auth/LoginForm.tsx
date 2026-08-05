@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { PremiumAuthForm } from "@/components/ui/premium-auth";
 import { joinQueueAction } from "@/actions/queue";
 import toast from "react-hot-toast";
-import { User, Phone, AlertTriangle, ArrowRight, Search, Ticket } from "lucide-react";
+import { User, Phone, AlertTriangle, ArrowRight, Search, Ticket, LayoutDashboard } from "lucide-react";
 import { CountryPhoneInput } from "@/components/ui/country-phone-input";
 import { CuelyLogo } from "@/components/ui/CuelyLogo";
 
@@ -156,6 +156,18 @@ export function LoginForm() {
                   Track Live Ticket
                 </button>
               </div>
+
+              {/* Patient Portal quick access */}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  router.push("/portal/login");
+                }}
+                className="w-full flex items-center justify-center gap-2 border border-white/10 bg-white/5 hover:bg-white/10 text-foreground font-bold rounded-xl px-4 py-3 text-sm transition-all"
+              >
+                <LayoutDashboard className="w-4 h-4 text-accent" />
+                Open My Portal (appointments, visits, ratings & bills)
+              </button>
 
               {patientAction === "join" ? (
                 /* REDIRECT TO FULL PATIENT FLOW (WIZARD) */

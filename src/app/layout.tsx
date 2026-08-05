@@ -5,6 +5,7 @@ import Script from "next/script";
 import "./globals.css";
 import Providers from "@/components/layout/Providers";
 import { ThemeProvider } from "@/components/theme-provider";
+import { LanguageProvider } from "@/components/i18n/LanguageProvider";
 
 const accentCursive = Dancing_Script({ subsets: ['latin'], variable: '--font-accent', weight: ['700'] });
 const lora = Lora({ subsets: ['latin'], variable: '--font-lora', weight: ['400', '500', '600', '700'] });
@@ -38,9 +39,11 @@ export default function RootLayout({
           }}
         />
         <ThemeProvider>
-          <Providers>
-            {children}
-          </Providers>
+          <LanguageProvider>
+            <Providers>
+              {children}
+            </Providers>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

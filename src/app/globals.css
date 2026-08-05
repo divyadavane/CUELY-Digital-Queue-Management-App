@@ -37,9 +37,11 @@
   --color-accent-serif: var(--accent-serif);
   --color-terracotta: #D97757;
 
-  --font-sans: var(--font-batica-sans), "Inter", system-ui, -apple-system, sans-serif;
-  --font-geist: "Inter", system-ui, -apple-system, sans-serif;
-  --font-accent: var(--font-accent), "Brush Script MT", cursive;
+  /* Devanagari (Hindi/Marathi) fallbacks appended so non-Latin scripts render properly */
+  --font-sans: var(--font-batica-sans), "Inter", "Noto Sans Devanagari", "Mukta", "Tiro Devanagari Hindi", system-ui, -apple-system, sans-serif;
+  --font-manrope: var(--font-portal), "Inter", "Noto Sans Devanagari", "Mukta", "Tiro Devanagari Hindi", system-ui, -apple-system, sans-serif;
+  --font-geist: "Inter", "Noto Sans Devanagari", "Mukta", "Tiro Devanagari Hindi", system-ui, -apple-system, sans-serif;
+  --font-accent: var(--font-accent), "Brush Script MT", "Noto Sans Devanagari", cursive;
   --animate-float: float 3s ease-in-out infinite;
 
   @keyframes float {

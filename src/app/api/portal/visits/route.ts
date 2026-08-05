@@ -1,0 +1,12 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getPortalSession } from "@/lib/portal/session";
+import { getPortalVisits } from "@/lib/portal/data";
+
+export async function GET(req: NextRequest) {
+  const session = await getPortalSession(req);
+  if (!session) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+  const visits = await getPortalVisits(session.phone);
+  return NextResponse.json({ visits });
+}

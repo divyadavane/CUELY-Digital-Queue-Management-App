@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { useTicketRealtime } from "@/hooks/useTicketRealtime";
 import { useQueueGraphData } from "@/hooks/useQueueGraphData";
 import { JoinForm } from "@/components/track/JoinForm";

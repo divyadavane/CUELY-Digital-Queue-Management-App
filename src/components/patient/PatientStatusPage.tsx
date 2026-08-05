@@ -3,10 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase";
 import { Database } from "@/types/database";
-import { Clock, Users, CheckCircle2, MessageSquare, Volume2, VolumeX } from "lucide-react";
+import { Clock, Users, CheckCircle2, MessageSquare, Volume2, VolumeX, LayoutDashboard } from "lucide-react";
 import { LiveQueueGraph } from "@/components/customer/LiveQueueGraph";
 import { useQueueGraphData } from "@/hooks/useQueueGraphData";
 import { CuelyLogo } from "@/components/ui/CuelyLogo";
+import { RatingPrompt } from "@/components/patient/RatingPrompt";
 
 type Ticket = Database["public"]["Tables"]["tickets"]["Row"];
 
@@ -93,13 +94,22 @@ export function PatientStatusPage({ initialTicket, clinicName = "Sunrise Clinic"
           </div>
         </div>
 
-        <button
-          onClick={() => setIsAudioEnabled((prev) => !prev)}
-          className="p-2 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:text-white"
-          title={isAudioEnabled ? "Audio alerts enabled" : "Audio muted"}
-        >
-          {isAudioEnabled ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href="/portal/login"
+            className="p-2 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:text-white transition-all"
+            title="Open My Patient Portal"
+          >
+            <LayoutDashboard className="w-4 h-4 text-blue-400" />
+          </a>
+          <button
+            onClick={() => setIsAudioEnabled((prev) => !prev)}
+            className="p-2 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:text-white"
+            title={isAudioEnabled ? "Audio alerts enabled" : "Audio muted"}
+          >
+            {isAudioEnabled ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
+          </button>
+        </div>
       </header>
 
       {/* Main Ticket Card */}
@@ -134,6 +144,11 @@ export function PatientStatusPage({ initialTicket, clinicName = "Sunrise Clinic"
             </div>
           )}
         </div>
+
+        {/* Rating Prompt after visit */}
+        {isServed && (
+          <RatingPrompt queueId={ticket.queue_id} ticketId={ticket.id} patientName={ticket.customer_name ?? undefined} doctorName={clinicName} />
+        )}
 
         {/* Live Metrics Grid */}
         {!isServed && (

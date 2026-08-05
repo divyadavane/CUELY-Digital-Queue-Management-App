@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabaseServer";
 import { CuelyLogo } from "@/components/ui/CuelyLogo";
+import { Star } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +55,15 @@ export default async function DisplayPage({ params }: { params: { id: string } }
                 {queue.counter_number || "Counter"} &mdash; {queue.doctor_name || queue.name}
               </h2>
               <p className="text-lg text-muted-foreground mb-8 text-center">{queue.department}</p>
+              {queue.total_ratings > 0 ? (
+                <div className="flex items-center gap-2 mb-8 text-lg text-muted-foreground">
+                  <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+                  <span className="font-bold text-amber-400">{Number(queue.avg_rating).toFixed(1)}</span>
+                  <span>· {queue.total_ratings} {queue.total_ratings === 1 ? "review" : "reviews"}</span>
+                </div>
+              ) : (
+                <p className="text-lg text-muted-foreground mb-8 text-center">No ratings yet</p>
+              )}
               
               {currentServing.length > 0 ? (
                 <div className="space-y-6 w-full">

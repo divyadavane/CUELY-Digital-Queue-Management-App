@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { TopBar } from "./TopBar";
 import { StatsStrip } from "./StatsStrip";
 import { QueueList } from "./QueueList";
@@ -11,10 +11,13 @@ import { ManualTicketForm } from "./ManualTicketForm";
 import { UrgencyAnalyticsPanel } from "./UrgencyAnalyticsPanel";
 import { useQueueRealtime } from "@/hooks/useQueueRealtime";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { DoctorRatingBadge } from "@/components/ui/DoctorRatingBadge";
 import { Database } from "@/types/database";
 import { createClient } from "@/lib/supabase";
 import { Toaster } from "react-hot-toast";
 import { SmsTemplateEditorModal } from "./SmsTemplateEditorModal";
+import { BillingManager } from "./BillingManager";
+import { BillInfo } from "./BillStatusBadge";
 import { LayoutDashboard, BarChart3, Command, Keyboard, MessageSquare, Settings } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -54,7 +57,25 @@ export function DashboardClient({
   const [totalServedToday, setTotalServedToday] = useState(0);
   const [avgWaitSeconds, setAvgWaitSeconds] = useState(300);
   const [noShowRate, setNoShowRate] = useState(0);
+  const [billsByTicket, setBillsByTicket] = useState<Record<string, BillInfo>>({});
   const supabase = createClient();
+
+  // Fetch read-only billing status for the active queue
+  const fetchBills = useCallback(async () => {
+    if (!activeQueueId) return;
+    try {
+      const res = await fetch(`/api/dashboard/bills?queueId=${activeQueueId}`);
+      if (!res.ok) return;
+      const { bills } = await res.json();
+      const map: Record<string, BillInfo> = {};
+      (bills || []).forEach((b: BillInfo) => {
+        if (b.ticket_id) map[b.ticket_id] = b;
+      });
+      setBillsByTicket(map);
+    } catch (e) {
+      console.error("Failed to fetch bills:", e);
+    }
+  }, [activeQueueId]);
 
   useEffect(() => {
     if (activeQueueId) {
@@ -62,6 +83,26 @@ export function DashboardClient({
       setActiveQueue(q);
     }
   }, [activeQueueId, queues]);
+
+  useEffect(() => {
+    fetchBills();
+    const channel = supabase
+      .channel(`public:bills:admin:${activeQueueId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "bills",
+          filter: `business_id=eq.${activeQueue?.business_id}`,
+        },
+        () => fetchBills()
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchBills, activeQueueId, activeQueue?.business_id, supabase]);
 
   useEffect(() => {
     async function fetchStats() {
@@ -183,9 +224,14 @@ export function DashboardClient({
                 </button>
               </div>
 
-              <div className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                Live Realtime Sync Enabled
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 bg-surface/60 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-xl">
+                  <DoctorRatingBadge queueId={activeQueueId} />
+                </div>
+                <div className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  Live Realtime Sync Enabled
+                </div>
               </div>
             </div>
 
@@ -203,8 +249,13 @@ export function DashboardClient({
                   <div className="lg:col-span-4 flex flex-col gap-6">
                     <CallNextButton queueId={activeQueueId} isDisabled={isCallNextDisabled} />
 
-                    {adminRole === "owner" && (
+                    {(adminRole === "owner" || adminRole === "admin") && (
                       <>
+                        <BillingManager
+                          queueId={activeQueueId}
+                          businessId={activeQueue?.business_id || businessId}
+                          initialFee={(activeQueue as any)?.consultation_fee || 0}
+                        />
                         <PauseToggle queueId={activeQueueId} isPaused={activeQueue?.is_paused || false} />
                         <ManualTicketForm queueId={activeQueueId} />
                       </>
@@ -286,6 +337,7 @@ export function DashboardClient({
                       adminRole={adminRole}
                       currentUserId={currentUserId}
                       queues={queues}
+                      billsByTicket={billsByTicket}
                     />
                   </div>
                 </div>

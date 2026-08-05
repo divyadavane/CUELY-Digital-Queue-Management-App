@@ -1,5 +1,8 @@
+"use client";
+
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 import { bookAppointmentAction } from "@/actions/queue";
 import { Calendar, Clock, AlertTriangle } from "lucide-react";
 import { CountryPhoneInput } from "@/components/ui/country-phone-input";
@@ -18,6 +21,7 @@ export const EMERGENCY_TYPES = [
 ];
 
 export function BookAppointmentForm({ queueId, onBooked }: BookAppointmentFormProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [emergencyType, setEmergencyType] = useState("routine");
@@ -31,7 +35,7 @@ export function BookAppointmentForm({ queueId, onBooked }: BookAppointmentFormPr
   const handleBook = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !phone) {
-      toast.error("Name and phone number are required for booking an appointment.");
+      toast.error(t("book.nameRequired"));
       return;
     }
 
@@ -46,13 +50,13 @@ export function BookAppointmentForm({ queueId, onBooked }: BookAppointmentFormPr
     );
 
     if (!success) {
-      toast.error(error || "Failed to book appointment");
+      toast.error(error || t("book.failed"));
       setLoading(false);
       return;
     }
 
     if (data && data.appointment_id) {
-      toast.success("Appointment booked successfully!");
+      toast.success(t("book.success"));
       onBooked(data.appointment_id, date);
     }
     setLoading(false);
@@ -61,30 +65,30 @@ export function BookAppointmentForm({ queueId, onBooked }: BookAppointmentFormPr
   return (
     <div className="w-full max-w-md mx-auto bg-surface border border-border rounded-3xl p-8 md:p-12 premium-shadow">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold font-sans text-foreground mb-3 tracking-tight">Book for Later</h2>
+        <h2 className="text-3xl font-bold font-sans text-foreground mb-3 tracking-tight">{t("book.title")}</h2>
         <p className="text-muted-foreground text-sm">
-          Schedule an appointment for a future date. You will check in when you arrive.
+          {t("book.subtitle")}
         </p>
       </div>
 
       <form onSubmit={handleBook} className="space-y-6">
         <div>
           <label className="block text-sm font-bold text-foreground mb-2">
-            Full Name *
+            {t("book.fullName")}
           </label>
           <input
             type="text"
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Jane Doe"
+            placeholder={t("book.namePlaceholder")}
             className="w-full bg-background border border-border rounded-xl px-4 py-3.5 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent transition-all text-base"
           />
         </div>
 
         <div>
           <label className="block text-sm font-bold text-foreground mb-2">
-            Phone Number *
+            {t("book.phone")}
           </label>
           <CountryPhoneInput
             required
@@ -97,7 +101,7 @@ export function BookAppointmentForm({ queueId, onBooked }: BookAppointmentFormPr
         <div>
           <label className="block text-sm font-bold text-foreground mb-2 flex items-center gap-1.5">
             <AlertTriangle className="w-4 h-4 text-amber-500" />
-            Visit Urgency / Category
+            {t("book.urgency")}
           </label>
           <select
             value={emergencyType}
@@ -106,7 +110,7 @@ export function BookAppointmentForm({ queueId, onBooked }: BookAppointmentFormPr
           >
             {EMERGENCY_TYPES.map((type) => (
               <option key={type.value} value={type.value}>
-                {type.label}
+                {t(`common.emergency.${type.value}`)}
               </option>
             ))}
           </select>
@@ -116,7 +120,7 @@ export function BookAppointmentForm({ queueId, onBooked }: BookAppointmentFormPr
           <div>
             <label className="block text-sm font-bold text-foreground mb-2 flex items-center gap-1.5">
               <Calendar className="w-4 h-4 text-accent" />
-              Date *
+              {t("book.date")}
             </label>
             <input
               type="date"
@@ -131,7 +135,7 @@ export function BookAppointmentForm({ queueId, onBooked }: BookAppointmentFormPr
           <div>
             <label className="block text-sm font-bold text-foreground mb-2 flex items-center gap-1.5">
               <Clock className="w-4 h-4 text-accent" />
-              Time
+              {t("book.time")}
             </label>
             <input
               type="time"
@@ -148,7 +152,7 @@ export function BookAppointmentForm({ queueId, onBooked }: BookAppointmentFormPr
           className="w-full bg-accent text-white font-bold py-4 rounded-xl hover:brightness-110 active:scale-[0.98] transition-all text-lg flex items-center justify-center gap-3 disabled:opacity-50"
         >
           {loading && <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-          Book Appointment
+          {t("book.submit")}
         </button>
       </form>
     </div>
