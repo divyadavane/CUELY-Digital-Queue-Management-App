@@ -51,6 +51,18 @@ function VideoTile({
   label?: string;
   compact?: boolean;
 }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el || !stream) return;
+    if (el.srcObject !== stream) el.srcObject = stream;
+    const play = () => el.play().catch(() => {});
+    play();
+    el.addEventListener("loadeddata", play);
+    return () => el.removeEventListener("loadeddata", play);
+  }, [stream]);
+
   useEffect(() => {
     if (stream) {
       console.debug("[video-debug] VideoTile render", {
@@ -67,10 +79,7 @@ function VideoTile({
     <div className={`relative rounded-2xl overflow-hidden bg-black ${compact ? "" : "w-full h-full"}`}>
       {stream ? (
         <video
-          key={stream.id}
-          ref={(el) => {
-            if (el && el.srcObject !== stream) el.srcObject = stream;
-          }}
+          ref={videoRef}
           autoPlay
           playsInline
           muted={muted}

@@ -368,6 +368,11 @@ export function useVideoCall({
 
   useEffect(() => {
     return () => {
+      // During a React StrictMode simulated unmount, an in-flight async join()
+      // owns the stream/PC/channel. Tearing them down here would stop the local
+      // camera (frozen/black self-view) and break the call. Only do a full
+      // teardown once join() has finished (or never started).
+      if (joiningRef.current) return;
       channelRef.current?.untrack().catch(() => {});
       channelRef.current?.unsubscribe().catch(() => {});
       pcRef.current?.close();
