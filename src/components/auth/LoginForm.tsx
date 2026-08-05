@@ -7,6 +7,7 @@ import { joinQueueAction } from "@/actions/queue";
 import toast from "react-hot-toast";
 import { User, Phone, AlertTriangle, ArrowRight, Search, Ticket } from "lucide-react";
 import { CountryPhoneInput } from "@/components/ui/country-phone-input";
+import { CuelyLogo } from "@/components/ui/CuelyLogo";
 
 type LoginRole = "staff" | "patient";
 type PatientAction = "join" | "track";
@@ -80,10 +81,8 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-md mx-auto">
       {/* Brand Header */}
-      <div className="text-center mb-6">
-        <div className="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-accent/30 text-white font-extrabold text-2xl font-sans">
-          C
-        </div>
+      <div className="text-center mb-6 flex flex-col items-center">
+        <CuelyLogo size="lg" showGlow className="mb-3" />
         <h1 className="text-2xl font-extrabold font-sans text-foreground">Welcome to Cuely</h1>
         <p className="text-xs font-semibold text-muted-foreground mt-1">Select your access portal to continue</p>
       </div>

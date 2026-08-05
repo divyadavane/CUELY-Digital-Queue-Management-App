@@ -1,11 +1,12 @@
 "use client";
 
-import { LogOut, LayoutDashboard, Volume2, VolumeX } from "lucide-react";
+import { LogOut, Volume2, VolumeX } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Database } from "@/types/database";
+import { CuelyLogo } from "@/components/ui/CuelyLogo";
 
 type Queue = Database["public"]["Tables"]["queues"]["Row"];
 
@@ -31,10 +32,10 @@ export function TopBar({ businessName, queues, activeQueueId, onQueueSelect, isM
     <header className="sticky top-0 z-50 w-full border-b border-border bg-surface px-6 h-16 flex items-center justify-between premium-shadow">
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-accent">
-            <LayoutDashboard className="w-4 h-4" />
-          </div>
-          <h1 className="font-bold text-lg font-sans text-foreground">{businessName}</h1>
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <CuelyLogo size="sm" showGlow className="group-hover:scale-105" />
+            <h1 className="font-bold text-lg font-sans text-foreground">{businessName}</h1>
+          </Link>
         </div>
       </div>
 

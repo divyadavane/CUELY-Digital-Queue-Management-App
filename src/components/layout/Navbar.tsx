@@ -14,6 +14,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { CuelyLogo } from '@/components/ui/CuelyLogo';
 
 interface NavbarProps {
   scrolled?: boolean;
@@ -56,7 +57,7 @@ export function Navbar({ scrolled: externalScrolled }: NavbarProps) {
             className="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-blue-500/50 rounded-xl p-1"
           >
             <div className="relative">
-              <img src="/icon.png" alt="Cuely Logo" className="w-10 h-10 rounded-xl object-contain shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform duration-300 bg-black" />
+              <CuelyLogo size="sm" showGlow className="group-hover:scale-105" />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-[var(--bg-primary)] animate-pulse" />
             </div>
             <div className="flex flex-col">

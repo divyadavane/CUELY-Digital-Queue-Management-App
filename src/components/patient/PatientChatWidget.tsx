@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 import { MessageSquare, X, Send, Bot, Activity, Users } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createClient } from '@/lib/supabase';
@@ -22,17 +23,17 @@ export function PatientChatWidget({ ticketId, businessId }: PatientChatWidgetPro
   
   const [input, setInput] = useState('');
   
-  const { messages, append, isLoading } = useChat({
-    api: '/api/agent/chat',
-    body: {
-      ticketId,
-      businessId,
-      sessionId
-    },
+  const { messages, sendMessage: append, status } = useChat({
+    transport: new DefaultChatTransport({
+      api: '/api/agent/chat',
+      body: { ticketId, businessId, sessionId },
+    }),
     onError: (error: any) => {
       console.error("Chat error:", error);
     }
   } as any) as any;
+
+  const isLoading = status === 'submitted' || status === 'streaming';
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
@@ -42,7 +43,7 @@ export function PatientChatWidget({ ticketId, businessId }: PatientChatWidgetPro
     e?.preventDefault();
     if (!input.trim() || isLoading) return;
     
-    append({ role: 'user', content: input });
+    append({ role: 'user', text: input });
     setInput('');
   };
 
@@ -89,7 +90,7 @@ export function PatientChatWidget({ ticketId, businessId }: PatientChatWidgetPro
   }, [messages, isLoading, isOpen]);
 
   const handleQuickReply = (deptName: string) => {
-    append({ role: 'user', content: `What is the wait time for ${deptName}?` });
+    append({ role: 'user', text: `What is the wait time for ${deptName}?` });
   };
 
   return (
@@ -203,18 +204,31 @@ export function PatientChatWidget({ ticketId, businessId }: PatientChatWidgetPro
                             : 'rounded-tl-md border border-white/10 bg-zinc-800/90 text-zinc-100 backdrop-blur-sm shadow-[0_4px_12px_-2px_rgba(0,0,0,0.3)]'
                         }`}
                       >
-                        <p className="whitespace-pre-wrap">{m.content}</p>
-                        
-                        {/* Tool Calls Indicator */}
-                        {m.toolInvocations && m.toolInvocations.length > 0 && (
-                          <div className={`mt-2 text-xs flex flex-col gap-1 ${isUser ? 'text-white/80' : 'text-white/40'}`}>
-                            {m.toolInvocations.map((tool: any) => (
-                              <div key={tool.toolCallId} className="flex items-center gap-1 italic">
-                                <Activity className="w-3 h-3 animate-pulse" /> checking system...
-                              </div>
-                            ))}
+                        {m.parts && m.parts.length > 0 ? (
+                          <div className="space-y-1">
+                            {m.parts.map((part: any, pIdx: number) => {
+                              if (part.type === 'text') {
+                                return (
+                                  <p key={pIdx} className="whitespace-pre-wrap">{part.text}</p>
+                                );
+                              }
+                              if (part.type === 'tool-invocation') {
+                                const toolState = part.toolInvocation?.state;
+                                return (
+                                  <div key={pIdx} className={`mt-2 text-xs flex flex-col gap-1 ${isUser ? 'text-white/80' : 'text-white/40'}`}>
+                                    <div className="flex items-center gap-1 italic">
+                                      <Activity className={`w-3 h-3 ${toolState === 'result' ? '' : 'animate-pulse'}`} />
+                                      {toolState === 'result' ? 'done' : 'checking system...'}
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })}
                           </div>
-                        )}
+                        ) : m.content ? (
+                          <p className="whitespace-pre-wrap">{m.content}</p>
+                        ) : null}
                       </motion.div>
                     </div>
                   </motion.div>

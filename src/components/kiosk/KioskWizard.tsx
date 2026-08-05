@@ -24,6 +24,7 @@ import {
   FlaskConical,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { CuelyLogo } from "@/components/ui/CuelyLogo";
 
 interface KioskWizardProps {
   queueId: string;
@@ -174,9 +175,7 @@ export function KioskWizard({ queueId, clinicName = "Sunrise Clinic", queues = [
       {/* Top Header Bar */}
       <header className="w-full max-w-4xl mx-auto flex items-center justify-between py-4 mb-4 z-10">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-accent/20 border border-accent/40 flex items-center justify-center text-accent shadow-lg shadow-accent/20">
-            <Stethoscope className="w-6 h-6" />
-          </div>
+          <CuelyLogo size="md" showGlow />
           <div>
             <h1 className="text-2xl font-black text-white tracking-tight">{clinicName}</h1>
             <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">

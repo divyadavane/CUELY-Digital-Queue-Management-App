@@ -1,15 +1,18 @@
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { streamText, tool } from 'ai';
+import { convertToModelMessages, isStepCount, streamText, tool, type UIMessage } from 'ai';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabaseServer';
 import { callTool } from '@/lib/agent/tools';
+import { getModel } from '@/lib/ai/provider';
 import { NextRequest } from 'next/server';
 
-export const maxDuration = 30; // 30 seconds limit for serverless functions
+function getTextFromUIMessage(message: UIMessage): string {
+  return (message?.parts ?? [])
+    .filter((part) => part.type === 'text')
+    .map((part) => part.text)
+    .join('');
+}
 
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY,
-});
+export const maxDuration = 30; // 30 seconds limit for serverless functions
 
 const SYSTEM_PROMPT = `
 You are the Cuely Patient Assistant. Your ONLY job is queue logistics for the clinic/hospital.
@@ -48,20 +51,25 @@ export async function POST(req: NextRequest) {
 
     // Log the user's latest message
     const lastUserMessage = messages[messages.length - 1];
+    const lastUserText = getTextFromUIMessage(lastUserMessage);
     if (lastUserMessage.role === 'user' && ticketId) {
       await supabase.from('agent_conversations').insert({
         ticket_id: ticketId,
         business_id: businessId,
         role: 'user',
-        content: lastUserMessage.content
+        content: lastUserText
       });
     }
 
-    // Call Gemini
+    // Convert useChat (UIMessage) format into ModelMessage[] for streamText
+    const modelMessages = await convertToModelMessages(messages);
+
+    // Call Gemini or Groq (whichever API key is configured)
     const result = streamText({
-      model: google('gemini-2.5-flash'),
+      model: getModel(),
       system: SYSTEM_PROMPT,
-      messages: messages as any,
+      messages: modelMessages,
+      stopWhen: isStepCount(5),
       tools: {
         get_queue_status: tool({
           description: 'Get the current status of all queues/counters for a business to check availability or compare queues.',

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabaseServer";
+import { CuelyLogo } from "@/components/ui/CuelyLogo";
 
 export const dynamic = "force-dynamic";
 
@@ -34,11 +35,14 @@ export default async function DisplayPage({ params }: { params: { id: string } }
 
   return (
     <div className="min-h-screen bg-background text-foreground p-8 flex flex-col font-sans">
-      <header className="mb-12 text-center">
-        <h1 className="text-5xl font-bold font-sans tracking-tight mb-2">
-          Hospital Now Serving
-        </h1>
-        <p className="text-2xl text-muted-foreground">Please proceed to your counter when called</p>
+      <header className="mb-12 text-center flex flex-col items-center gap-4">
+        <CuelyLogo size="xl" showGlow />
+        <div>
+          <h1 className="text-5xl font-bold font-sans tracking-tight mb-2">
+            Hospital Now Serving
+          </h1>
+          <p className="text-2xl text-muted-foreground">Please proceed to your counter when called</p>
+        </div>
       </header>
 
       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-[1400px] mx-auto w-full">

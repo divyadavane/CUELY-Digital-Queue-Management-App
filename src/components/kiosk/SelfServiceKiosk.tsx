@@ -4,8 +4,9 @@ import React, { useState } from "react";
 import { joinQueueAction } from "@/actions/queue";
 import { CountryPhoneInput } from "@/components/ui/country-phone-input";
 import { EMERGENCY_TYPES } from "@/components/customer/BookAppointmentForm";
-import { CheckCircle2, QrCode, AlertTriangle, Stethoscope, Globe, Printer, Ticket } from "lucide-react";
+import { CheckCircle2, QrCode, AlertTriangle, Globe, Printer, Ticket } from "lucide-react";
 import toast from "react-hot-toast";
+import { CuelyLogo } from "@/components/ui/CuelyLogo";
 
 interface SelfServiceKioskProps {
   queueId: string;
@@ -105,9 +106,7 @@ export function SelfServiceKiosk({ queueId, clinicName = "Sunrise Clinic" }: Sel
       {/* Top Kiosk Header Banner */}
       <div className="w-full max-w-2xl mx-auto flex items-center justify-between mb-6 z-10">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-accent/20 border border-accent/40 flex items-center justify-center text-accent shadow-lg shadow-accent/20">
-            <Stethoscope className="w-6 h-6" />
-          </div>
+          <CuelyLogo size="md" showGlow />
           <div>
             <h1 className="text-2xl font-black font-sans text-white tracking-tight">{clinicName}</h1>
             <p className="text-xs text-slate-400 font-medium">Self-Service OPD Check-in Kiosk</p>

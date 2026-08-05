@@ -1,15 +1,8 @@
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { streamText, tool } from 'ai';
-import { z } from 'zod';
-import { createClient } from '@/lib/supabaseServer';
-import { callTool } from '@/lib/agent/tools';
+import { convertToModelMessages, streamText } from 'ai';
+import { getModel } from '@/lib/ai/provider';
 import { NextRequest } from 'next/server';
 
 export const maxDuration = 30; // 30 seconds limit for serverless functions
-
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY,
-});
 
 const SYSTEM_PROMPT = `
 You are the Cuely Sales & Support Assistant. Your ONLY job is to answer questions about the Cuely Digital Queue Management platform for prospective customers (businesses, hospitals, clinics).
@@ -26,11 +19,14 @@ export async function POST(req: NextRequest) {
   try {
     const { messages } = await req.json();
 
-    // Call Gemini
+    // Convert useChat (UIMessage) format into ModelMessage[] for streamText
+    const modelMessages = await convertToModelMessages(messages);
+
+    // Call Gemini or Groq (whichever API key is configured)
     const result = streamText({
-      model: google('gemini-2.5-flash'),
+      model: getModel(),
       system: SYSTEM_PROMPT,
-      messages: messages as any,
+      messages: modelMessages,
       temperature: 0.7,
     });
     

@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase";
 import { Database } from "@/types/database";
-import { Clock, Users, CheckCircle2, MessageSquare, Volume2, VolumeX, Stethoscope } from "lucide-react";
+import { Clock, Users, CheckCircle2, MessageSquare, Volume2, VolumeX } from "lucide-react";
 import { LiveQueueGraph } from "@/components/customer/LiveQueueGraph";
 import { useQueueGraphData } from "@/hooks/useQueueGraphData";
+import { CuelyLogo } from "@/components/ui/CuelyLogo";
 
 type Ticket = Database["public"]["Tables"]["tickets"]["Row"];
 
@@ -85,9 +86,7 @@ export function PatientStatusPage({ initialTicket, clinicName = "Sunrise Clinic"
       {/* Header */}
       <header className="w-full max-w-md mx-auto flex items-center justify-between py-4 border-b border-white/10 mb-6">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-accent/20 border border-accent/40 flex items-center justify-center text-accent">
-            <Stethoscope className="w-5 h-5" />
-          </div>
+          <CuelyLogo size="sm" showGlow />
           <div>
             <h1 className="font-bold text-base font-sans text-white">{clinicName}</h1>
             <p className="text-[11px] text-slate-400 font-medium">Live Patient Queue Portal</p>

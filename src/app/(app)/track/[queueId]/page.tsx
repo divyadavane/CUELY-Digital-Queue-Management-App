@@ -11,6 +11,7 @@ import { LiveQueueGraph } from "@/components/customer/LiveQueueGraph";
 import { useQueueGraphData } from "@/hooks/useQueueGraphData";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import { CuelyLogo } from "@/components/ui/CuelyLogo";
 import { PatientChatWidget } from "@/components/patient/PatientChatWidget";
 import { DepartmentDoctorWizard } from "@/components/patient/DepartmentDoctorWizard";
 import { Database } from "@/types/database";
@@ -71,10 +72,8 @@ export default function TrackPage() {
       {/* Header */}
       <header className="py-6 px-4 md:px-8 border-b border-border/50">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-foreground text-background rounded-lg flex items-center justify-center font-bold text-sm">
-              C
-            </div>
+          <Link href="/" className="flex items-center gap-2 group">
+            <CuelyLogo size="sm" showGlow className="group-hover:scale-105" />
             <span className="text-xl font-bold font-sans tracking-tight text-foreground">
               Cuely
             </span>

@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { Database } from "@/types/database";
+import { CuelyLogo } from "@/components/ui/CuelyLogo";
 
 type Queue = Database["public"]["Tables"]["queues"]["Row"];
 
@@ -22,7 +23,7 @@ export default function TopBar({ businessName, queues, selectedQueue, onSelectQu
           {/* Left: Logo + Business Name */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <img src="/icon.png" alt="Cuely Logo" className="w-8 h-8 rounded-lg object-contain" />
+              <CuelyLogo size="sm" showGlow />
               <span className="text-lg font-bold tracking-tight">Cuely</span>
             </div>
             <div className="hidden sm:block w-px h-8 bg-navy-700" />
