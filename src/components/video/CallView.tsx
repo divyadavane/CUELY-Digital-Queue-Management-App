@@ -17,11 +17,13 @@ import {
   Users,
   Stethoscope,
   ClipboardList,
+  MessageSquare,
   X,
   Loader2,
 } from "lucide-react";
 import { useVideoCall, ConnectionQuality } from "@/hooks/useVideoCall";
 import { DoctorPanel } from "./DoctorPanel";
+import { ChatThread } from "@/components/chat/ChatThread";
 
 interface CallViewProps {
   role: "doctor" | "patient";
@@ -153,7 +155,6 @@ export function CallView({
     micOn,
     screenSharing,
     error,
-    joined,
     elapsedSeconds,
     join,
     leave,
@@ -166,6 +167,7 @@ export function CallView({
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [pressingEnd, setPressingEnd] = useState(false);
   const statusReportedRef = useRef(false);
 
@@ -321,6 +323,36 @@ export function CallView({
           <VideoTile stream={sideStream} mirrored={sideMirrored} muted label={sideLabel} compact />
         </div>
 
+        {/* In-call chat (both roles) */}
+        {showChat && (
+          <>
+            {/* Desktop chat drawer */}
+            <div className="hidden lg:flex w-80 border border-white/10 rounded-2xl overflow-hidden bg-[#0a0f1c] shrink-0 flex-col">
+              <ChatThread
+                consultationId={consultationId}
+                role={isPatient ? "patient" : "doctor"}
+                senderName={displayName}
+                title={isPatient ? doctorName : patientName || t("video.patient")}
+                subtitle={t("chat.listSubtitle")}
+                onClose={() => setShowChat(false)}
+                className="h-full"
+              />
+            </div>
+            {/* Mobile chat drawer */}
+            <div className="lg:hidden absolute inset-0 z-30 bg-[#0a0f1c] flex flex-col">
+              <ChatThread
+                consultationId={consultationId}
+                role={isPatient ? "patient" : "doctor"}
+                senderName={displayName}
+                title={isPatient ? doctorName : patientName || t("video.patient")}
+                subtitle={t("chat.listSubtitle")}
+                onClose={() => setShowChat(false)}
+                className="h-full"
+              />
+            </div>
+          </>
+        )}
+
         {/* Doctor panel (SOAP + prescription) */}
         {isDoctorPanelEnabled && showPanel && (
           <div className="w-80 border border-white/10 rounded-2xl overflow-hidden bg-slate-900 shrink-0 flex flex-col hidden lg:flex">
@@ -386,6 +418,10 @@ export function CallView({
             </ControlButton>
           )}
 
+          <ControlButton active={showChat} onClick={() => setShowChat((v) => !v)} label={t("video.chat")}>
+            <MessageSquare className="w-5 h-5" />
+          </ControlButton>
+
           <ControlButton active onClick={toggleFullscreen} label={t("video.fullscreen")}>
             {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
           </ControlButton>
@@ -415,16 +451,6 @@ export function CallView({
             </button>
           </div>
         )}
-      </div>
-
-      {/* TEMP debug bar */}
-      <div className="shrink-0 px-3 py-1 bg-slate-900 border-t border-white/10 text-[10px] font-mono text-emerald-300 flex flex-wrap gap-x-3 gap-y-0.5">
-        <span>role:{role}</span>
-        <span>pc:{connectionState}</span>
-        <span>joined:{String(joined)}</span>
-        <span>peers:{peers.length}</span>
-        <span>local:{localStream ? (localStream.getVideoTracks().some((t) => t.readyState === "live") ? "video:live" : "video:dead") : "none"}</span>
-        <span>remote:{remoteStream ? "yes" : "no"}</span>
       </div>
     </div>
   );

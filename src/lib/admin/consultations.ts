@@ -40,13 +40,22 @@ type RawRow = Record<string, any> & {
   patient_phone: string;
   doctor_name: string | null;
   queue_name: string | null;
-  bills: any[];
-  consultation_notes: any[] | null;
-  prescriptions: any[] | null;
+  bills: any[] | null;
+  consultation_notes: any | null;
+  prescriptions: any | null;
   queues: any | null;
 };
 
+// PostgREST returns to-one relations (unique FK) as a single object while
+// to-many relations come back as arrays. Normalize both to an array.
+function asArray<T>(value: T | T[] | null | undefined): T[] {
+  if (value == null) return [];
+  return Array.isArray(value) ? value : [value];
+}
+
 function mapRow(row: RawRow): DoctorConsultationRow {
+  const notes = asArray(row.consultation_notes)[0];
+  const prescription = asArray(row.prescriptions)[0];
   return {
     id: row.id,
     status: row.status,
@@ -59,22 +68,22 @@ function mapRow(row: RawRow): DoctorConsultationRow {
     doctor_name: row.queues?.doctor_name || row.queues?.name || null,
     queue_name: row.queues?.name || null,
     bill: (row.bills && row.bills[0]) || null,
-    notes: row.consultation_notes && row.consultation_notes[0]
+    notes: notes
       ? {
-          subjective: row.consultation_notes[0].subjective || "",
-          objective: row.consultation_notes[0].objective || "",
-          assessment: row.consultation_notes[0].assessment || "",
-          plan: row.consultation_notes[0].plan || "",
-          updated_at: row.consultation_notes[0].updated_at,
+          subjective: notes.subjective || "",
+          objective: notes.objective || "",
+          assessment: notes.assessment || "",
+          plan: notes.plan || "",
+          updated_at: notes.updated_at,
         }
       : null,
-    prescription: row.prescriptions && row.prescriptions[0]
+    prescription: prescription
       ? {
-          diagnosis: row.prescriptions[0].diagnosis || null,
-          medicine_items: row.prescriptions[0].medicine_items || [],
-          lab_tests: row.prescriptions[0].lab_tests || [],
-          follow_up_date: row.prescriptions[0].follow_up_date || null,
-          notes: row.prescriptions[0].notes || null,
+          diagnosis: prescription.diagnosis || null,
+          medicine_items: prescription.medicine_items || [],
+          lab_tests: prescription.lab_tests || [],
+          follow_up_date: prescription.follow_up_date || null,
+          notes: prescription.notes || null,
         }
       : null,
   };
