@@ -9,7 +9,12 @@ import { TicketRow } from "./TicketRow";
 import { TransferTicketModal } from "./TransferTicketModal";
 import { AppointmentsPanel } from "./AppointmentsPanel";
 import { VideoConsultationsPanel } from "./VideoConsultationsPanel";
+import { MessagesPanel } from "./MessagesPanel";
+import { SchedulePanel } from "./SchedulePanel";
+import { DoctorRealtimePanel } from "./DoctorRealtimePanel";
 import { BillInfo } from "./BillStatusBadge";
+import { callNextAction } from "@/actions/queue";
+import { useDoctorShortcuts } from "@/hooks/useDoctorShortcuts";
 import {
   Stethoscope,
   Clock,
@@ -23,6 +28,7 @@ import {
   ShieldAlert,
   ArrowRightLeft,
   Star,
+  Command,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -178,6 +184,46 @@ export function DoctorQueueView({ queues }: DoctorQueueViewProps) {
 
   const currentlyWaiting = tickets.filter((t) => t.status === "waiting").length;
   const estWaitMins = currentlyWaiting * activeDoctor.consultDurationMins;
+  const calledTicket = tickets.find((t) => t.status === "called") || null;
+
+  // Doctor-side shortcuts: C = complete, T = start timer, A = request assistance
+  useDoctorShortcuts({
+    queueId: activeDoctor.queueId,
+    calledTicketId: calledTicket?.id || null,
+    onComplete: (ticketId) => {
+      fetch("/api/dashboard/doctor/actions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "complete_consult", queueId: activeDoctor.queueId, ticketId }),
+      })
+        .then((r) => r.json())
+        .then((d) => {
+          toast.success(d?.success ? "Consult complete" : "Failed to complete");
+          fetchDoctorQueue();
+        });
+    },
+    onStart: (ticketId) => {
+      fetch("/api/dashboard/doctor/actions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "start_consult", queueId: activeDoctor.queueId, ticketId }),
+      })
+        .then((r) => r.json())
+        .then(() => fetchDoctorQueue());
+    },
+    onAssist: () => {
+      fetch("/api/dashboard/doctor/actions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "request_assistance", queueId: activeDoctor.queueId }),
+      }).then(() => toast.success("Front desk notified"));
+    },
+  });
+
+  const handleCallNext = async () => {
+    const { success, error } = await callNextAction(activeDoctor.queueId);
+    if (!success) toast.error(error || "Failed to call next");
+  };
 
   return (
     <div className="space-y-8 p-6 md:p-8 max-w-7xl mx-auto">
@@ -280,6 +326,14 @@ export function DoctorQueueView({ queues }: DoctorQueueViewProps) {
         </div>
       </div>
 
+      {/* Doctor Realtime Consult Panel */}
+      {activeDoctor && (
+        <DoctorRealtimePanel
+          queueId={activeDoctor.queueId}
+          doctorName={activeDoctor.name}
+        />
+      )}
+
       {/* Scoped Doctor Stat Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-slate-900/80 border border-white/10 rounded-3xl p-6 shadow-xl">
@@ -339,24 +393,38 @@ export function DoctorQueueView({ queues }: DoctorQueueViewProps) {
             <p className="text-xs text-slate-400">Scoped patient arrivals for {activeDoctor.department}</p>
           </div>
 
-          {/* Sort Switcher */}
-          <div className="flex items-center bg-slate-950 border border-white/10 rounded-xl p-1 text-xs font-bold">
+          <div className="flex items-center gap-3">
+            {/* Call Next */}
             <button
-              onClick={() => setSortBy("urgency")}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                sortBy === "urgency" ? "bg-accent text-white" : "text-slate-400 hover:text-white"
-              }`}
+              onClick={handleCallNext}
+              disabled={currentlyWaiting === 0 || !!calledTicket}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-blue-500/25 disabled:opacity-40 active:scale-95"
+              title="Call Next Patient (N)"
             >
-              Priority Order
+              <ArrowRightLeft className="w-4 h-4 rotate-90" />
+              Call Next
+              <span className="font-mono bg-black/30 px-1.5 py-0.5 rounded text-[9px] border border-white/20">N</span>
             </button>
-            <button
-              onClick={() => setSortBy("arrival")}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                sortBy === "arrival" ? "bg-accent text-white" : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Arrival Time
-            </button>
+
+            {/* Sort Switcher */}
+            <div className="flex items-center bg-slate-950 border border-white/10 rounded-xl p-1 text-xs font-bold">
+              <button
+                onClick={() => setSortBy("urgency")}
+                className={`px-3 py-1.5 rounded-lg transition-all ${
+                  sortBy === "urgency" ? "bg-accent text-white" : "text-slate-400 hover:text-white"
+                }`}
+              >
+                Priority Order
+              </button>
+              <button
+                onClick={() => setSortBy("arrival")}
+                className={`px-3 py-1.5 rounded-lg transition-all ${
+                  sortBy === "arrival" ? "bg-accent text-white" : "text-slate-400 hover:text-white"
+                }`}
+              >
+                Arrival Time
+              </button>
+            </div>
           </div>
         </div>
 
@@ -381,6 +449,22 @@ export function DoctorQueueView({ queues }: DoctorQueueViewProps) {
         <VideoConsultationsPanel queueId={activeDoctor.queueId} />
       )}
 
+      {/* Patient Messages */}
+      {activeDoctor && (
+        <MessagesPanel
+          queueId={activeDoctor.queueId}
+          doctorName={activeDoctor.name}
+        />
+      )}
+
+      {/* Schedule & Availability */}
+      {activeDoctor && (
+        <SchedulePanel
+          queueId={activeDoctor.queueId}
+          doctorName={activeDoctor.name}
+        />
+      )}
+
       {/* Booked Appointments */}
       {activeDoctor && (
         <AppointmentsPanel
@@ -389,6 +473,32 @@ export function DoctorQueueView({ queues }: DoctorQueueViewProps) {
           onCheckedIn={fetchDoctorQueue}
         />
       )}
+
+      {/* Doctor Command Palette Hints */}
+      <div className="bg-slate-900/60 border border-white/10 rounded-3xl p-5 shadow-xl hidden lg:block">
+        <div className="flex items-center gap-2 mb-4 text-foreground font-bold font-sans">
+          <Command className="w-4 h-4 text-accent" />
+          <span>Doctor Shortcut Keys</span>
+        </div>
+        <ul className="text-xs space-y-3 font-medium text-slate-300">
+          <li className="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/5">
+            <span>Call Next Patient</span>
+            <span className="font-mono bg-black/40 px-2 py-1 rounded-md text-[10px] border border-white/10 font-bold">N</span>
+          </li>
+          <li className="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/5">
+            <span>Complete Consultation</span>
+            <span className="font-mono bg-black/40 px-2 py-1 rounded-md text-[10px] border border-white/10 font-bold">C</span>
+          </li>
+          <li className="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/5">
+            <span>Start / Restart Consult Timer</span>
+            <span className="font-mono bg-black/40 px-2 py-1 rounded-md text-[10px] border border-white/10 font-bold">T</span>
+          </li>
+          <li className="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/5">
+            <span>Request Front-Desk Assistance</span>
+            <span className="font-mono bg-black/40 px-2 py-1 rounded-md text-[10px] border border-white/10 font-bold">A</span>
+          </li>
+        </ul>
+      </div>
     </div>
   );
 }

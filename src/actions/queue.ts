@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabaseServer";
 import { sendWhatsAppNotification } from "@/lib/whatsapp";
 import { sendPushNotification } from "@/lib/push";
+import { isSlotAvailable } from "@/lib/schedule";
 
 export async function joinQueueAction(
   queueId: string,
@@ -50,6 +51,23 @@ export async function bookAppointmentAction(
   name: string | null = null
 ) {
   const supabase = await createClient();
+
+  // Never book into a slot that isn't actually available.
+  if (time) {
+    const available = await isSlotAvailable(
+      queueId,
+      date,
+      time,
+      (emergencyType || "routine") as any
+    );
+    if (!available) {
+      return {
+        success: false,
+        error: "That time slot is no longer available. Please pick another time.",
+      };
+    }
+  }
+
   const { data, error } = await supabase.rpc("book_appointment", {
     p_queue_id: queueId,
     p_name: name || undefined,

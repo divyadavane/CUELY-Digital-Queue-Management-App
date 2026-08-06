@@ -40,6 +40,8 @@ export interface Database {
           total_ratings: number
           consultation_fee: number
           video_enabled: boolean
+          assistance_requested_at: string | null
+          avg_consult_mins: number
           created_at: string
         }
       }
@@ -117,6 +119,12 @@ export interface Database {
           joined_at: string
           called_at: string | null
           served_at: string | null
+          visit_reason: string | null
+          clinical_note: string | null
+          insurance_verified: boolean
+          urgency_tag: 'emergency' | 'walk-in' | 'follow-up' | 'vip' | null
+          consult_started_at: string | null
+          consult_ended_at: string | null
         }
       }
       serving_stats: {
@@ -304,6 +312,22 @@ export interface Database {
       }
       submit_consultation_rating: {
         Args: { p_consultation_id: string; p_rating_value: number; p_comment?: string }
+        Returns: Json
+      }
+      start_consult: {
+        Args: { p_ticket_id: string }
+        Returns: Json
+      }
+      complete_consult: {
+        Args: { p_ticket_id: string }
+        Returns: Json
+      }
+      request_assistance: {
+        Args: { p_queue_id: string }
+        Returns: Json
+      }
+      clear_assistance: {
+        Args: { p_queue_id: string }
         Returns: Json
       }
     }

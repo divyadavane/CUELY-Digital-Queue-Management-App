@@ -58,6 +58,32 @@ function iceServers(): RTCIceServer[] {
   return servers;
 }
 
+// getUserMedia can fail transiently when the camera is momentarily busy
+// (e.g. another tab still holding it). Retry with a short backoff so the call
+// can recover instead of dying on the first attempt.
+async function acquireCamera(): Promise<MediaStream> {
+  const constraints: MediaStreamConstraints = {
+    video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+  };
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await navigator.mediaDevices.getUserMedia(constraints);
+    } catch (e) {
+      lastError = e;
+      if (attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 800 * (attempt + 1)));
+      }
+    }
+  }
+  const err = lastError as DOMException | undefined;
+  if (err?.name === "NotAllowedError") {
+    throw new Error("Camera & microphone permission was denied. Allow access and try again.");
+  }
+  throw new Error("Could not start the camera. Close any other app/tab using it, then try again.");
+}
+
 export function useVideoCall({
   consultationId,
   roomToken,
@@ -76,6 +102,7 @@ export function useVideoCall({
   const reconnectAttemptsRef = useRef(0);
   const joiningRef = useRef(false);
   const joinedRef = useRef(false);
+  const lastPcCreatedAtRef = useRef(0);
 
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
@@ -157,10 +184,7 @@ export function useVideoCall({
       return initialStream;
     }
     console.debug("[video-debug] ensureLocalStream: no usable handoff, calling getUserMedia");
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-    });
+    const stream = await acquireCamera();
     console.debug("[video-debug] ensureLocalStream: fresh stream", stream.id, stream.getTracks().map((t) => `${t.kind}:${t.readyState}`));
     localStreamRef.current = stream;
     setLocalStream(stream);
@@ -172,6 +196,7 @@ export function useVideoCall({
       if (pcRef.current) {
         pcRef.current.close();
       }
+      lastPcCreatedAtRef.current = Date.now();
       const pc = new RTCPeerConnection({ iceServers: iceServers() });
       pcRef.current = pc;
 
@@ -241,10 +266,13 @@ export function useVideoCall({
       const type = payload?.type;
 
       if (type === "offer") {
-        // Doctor (or the receiving party) answers. Glare is avoided by only
-        // the patient offering the initial call.
-        if (pc.signalingState !== "stable") return;
+        // Answer an incoming offer. If we already made our own offer at the
+        // same time (glare), roll back so negotiation can settle instead of
+        // deadlocking on two simultaneous offers.
         try {
+          if (pc.signalingState !== "stable") {
+            await pc.setLocalDescription({ type: "rollback" });
+          }
           await pc.setRemoteDescription(new RTCSessionDescription({ type: "offer", sdp: payload.sdp }));
           pendingCandidatesRef.current.forEach((c) => pc.addIceCandidate(c).catch(() => {}));
           pendingCandidatesRef.current = [];
@@ -338,12 +366,43 @@ export function useVideoCall({
     }
   }, [roomToken, role, displayName, ensureLocalStream, createPeerConnection, handleSignal, maybeSendOffer]);
 
-  // Re-send the offer when the doctor's presence arrives while we wait.
+  // Re-send the offer when the other peer's presence arrives while we wait.
+  // The patient initiates immediately; the doctor offers as a fallback after
+  // a short delay so the call also connects if the patient side never offered
+  // (e.g. two tabs of the same role). Simultaneous offers are handled via the
+  // rollback in handleSignal.
   useEffect(() => {
-    if (!joined || role !== "patient" || gotRemoteRef.current) return;
+    if (!joined || gotRemoteRef.current) return;
     const hasOther = peers.length >= 2;
-    if (hasOther) maybeSendOffer();
+    if (!hasOther) return;
+    const delay = role === "patient" ? 0 : 1500;
+    const timer = setTimeout(() => {
+      if (!gotRemoteRef.current) maybeSendOffer();
+    }, delay);
+    return () => clearTimeout(timer);
   }, [peers, joined, role, maybeSendOffer]);
+
+  // Watchdog: if we're in the room with another peer but the connection never
+  // establishes (lost/missed signaling, stuck offer, failed ICE), rebuild the
+  // peer connection and re-offer on an interval until it actually connects.
+  // This self-heals every remaining deadlock: no-offer, un-answered offer,
+  // dropped messages, and failed candidate negotiation.
+  useEffect(() => {
+    if (!joined || peers.length < 2) return;
+    const interval = setInterval(() => {
+      if (gotRemoteRef.current) return;
+      const stream = localStreamRef.current;
+      if (!stream) return;
+      const pc = pcRef.current;
+      if (pc && pc.connectionState === "connected") return;
+      const age = Date.now() - lastPcCreatedAtRef.current;
+      // Give a freshly created pc time to finish ICE before rebuilding it.
+      if (pc && pc.connectionState === "connecting" && age < 6000) return;
+      createPeerConnection(stream);
+      maybeSendOffer();
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [joined, peers.length, createPeerConnection, maybeSendOffer]);
 
   const leave = useCallback(() => {
     channelRef.current?.untrack().catch(() => {});

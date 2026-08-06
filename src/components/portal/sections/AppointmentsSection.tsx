@@ -231,7 +231,10 @@ function BookAppointmentForm({ onDone }: { onDone: () => void }) {
   const [queues, setQueues] = useState<any[] | null>(null);
   const [queueId, setQueueId] = useState("");
   const [date, setDate] = useState("");
+  const [emergencyType, setEmergencyType] = useState("routine");
   const [time, setTime] = useState("");
+  const [slots, setSlots] = useState<{ start: string; available: boolean }[] | null>(null);
+  const [loadingSlots, setLoadingSlots] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -246,6 +249,29 @@ function BookAppointmentForm({ onDone }: { onDone: () => void }) {
       });
   }, []);
 
+  useEffect(() => {
+    if (!queueId || !date) {
+      setSlots(null);
+      setTime("");
+      return;
+    }
+    let cancelled = false;
+    setLoadingSlots(true);
+    setTime("");
+    portalApi<{ slots: { start: string; end: string; available: boolean }[] }>(
+      `/api/portal/slots?queueId=${encodeURIComponent(queueId)}&date=${date}&appointmentType=${emergencyType}`
+    )
+      .then((res) => {
+        if (cancelled) return;
+        setSlots(res.slots || []);
+      })
+      .catch(() => !cancelled && setSlots([]))
+      .finally(() => !cancelled && setLoadingSlots(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [queueId, date, emergencyType]);
+
   const book = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!queueId || !date) {
@@ -256,7 +282,7 @@ function BookAppointmentForm({ onDone }: { onDone: () => void }) {
     try {
       await portalApi("/api/portal/appointments", {
         method: "POST",
-        body: JSON.stringify({ queueId, date, time: time || null }),
+        body: JSON.stringify({ queueId, date, time: time || null, emergencyType }),
       });
       toast.success(t("appointments.booked"));
       setDate("");
@@ -294,6 +320,21 @@ function BookAppointmentForm({ onDone }: { onDone: () => void }) {
           )}
         </div>
 
+        <div>
+          <label className="block text-[11px] font-bold text-slate-400 mb-1.5">{t("appointments.urgency")}</label>
+          <select
+            value={emergencyType}
+            onChange={(e) => setEmergencyType(e.target.value)}
+            className="w-full bg-black/30 border border-white/10 text-white text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-400"
+          >
+            {["routine", "urgent", "critical", "follow_up", "other"].map((type) => (
+              <option key={type} value={type} className="bg-slate-900 text-white capitalize">
+                {t(`common.emergency.${type}`)}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-[11px] font-bold text-slate-400 mb-1.5">{t("appointments.date")}</label>
@@ -308,14 +349,32 @@ function BookAppointmentForm({ onDone }: { onDone: () => void }) {
           </div>
           <div>
             <label className="block text-[11px] font-bold text-slate-400 mb-1.5">{t("appointments.timeOptional")}</label>
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              className="w-full bg-black/30 border border-white/10 text-white text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-400"
-            />
+            {loadingSlots ? (
+              <div className="flex items-center h-[42px]">
+                <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
+              </div>
+            ) : (
+              <select
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                disabled={!slots || slots.filter((s) => s.available).length === 0}
+                className="w-full bg-black/30 border border-white/10 text-white text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-400 disabled:opacity-50"
+              >
+                <option value="">{t("appointments.pickSlot")}</option>
+                {(slots || [])
+                  .filter((s) => s.available)
+                  .map((s) => (
+                    <option key={s.start} value={s.start} className="bg-slate-900 text-white">
+                      {s.start}
+                    </option>
+                  ))}
+              </select>
+            )}
           </div>
         </div>
+        {slots && slots.filter((s) => s.available).length === 0 && !loadingSlots && (
+          <p className="text-[11px] text-amber-400">{t("appointments.noSlots")}</p>
+        )}
 
         <button
           type="submit"

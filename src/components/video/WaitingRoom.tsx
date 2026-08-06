@@ -30,6 +30,7 @@ export function WaitingRoom({
   const [micOk, setMicOk] = useState<boolean | null>(null);
   const [previewStream, setPreviewStream] = useState<MediaStream | null>(null);
   const [previewError, setPreviewError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
   const handedOffRef = useRef(false);
 
   useEffect(() => {
@@ -47,6 +48,10 @@ export function WaitingRoom({
   useEffect(() => {
     let stream: MediaStream | null = null;
     let cancelled = false;
+    setPreviewStream(null);
+    setPreviewError(null);
+    setCameraOk(false);
+    setMicOk(false);
     navigator.mediaDevices
       .getUserMedia({ video: { facingMode: "user" }, audio: true })
       .then((s) => {
@@ -72,7 +77,7 @@ export function WaitingRoom({
       if (!handedOffRef.current) stream?.getTracks().forEach((t) => t.stop());
       setPreviewStream(null);
     };
-  }, []);
+  }, [retryKey]);
 
   const subtitle = isPatient ? t("video.waitingSub", { doctor: doctorName }) : t("video.waitingSubDoctor", { patient: patientName || t("video.patient") });
 
@@ -139,6 +144,14 @@ export function WaitingRoom({
                 <p className="text-xs text-slate-500">
                   {previewError === "permission" ? t("video.cameraPermission") : t("video.cameraUnavailable")}
                 </p>
+                {previewError && (
+                  <button
+                    onClick={() => setRetryKey((k) => k + 1)}
+                    className="mt-1 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold"
+                  >
+                    {t("video.retryCamera")}
+                  </button>
+                )}
               </div>
             )}
             <div className="absolute bottom-2 right-2 flex items-center gap-1.5">

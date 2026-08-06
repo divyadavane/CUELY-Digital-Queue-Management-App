@@ -73,6 +73,8 @@
     "title": "Book for Later",
     "subtitle": "Schedule an appointment for a future date. You will check in when you arrive.",
     "nameRequired": "Name and phone number are required for booking an appointment.",
+    "pickSlot": "Choose a time slot",
+    "noSlots": "No slots available on this day. Try another date.",
     "failed": "Failed to book appointment",
     "success": "Appointment booked successfully!",
     "fullName": "Full Name *",
@@ -236,7 +238,8 @@
       "ratings": "Ratings",
       "billing": "Billing",
       "profile": "Profile",
-      "consultations": "Video"
+      "consultations": "Video",
+      "messages": "Chat"
     },
     "loading": "Opening your portal...",
     "title": "My Portal",
@@ -345,6 +348,9 @@
     "doctorQueue": "Doctor / Queue",
     "date": "Date",
     "timeOptional": "Time (optional)",
+    "urgency": "Type of visit",
+    "pickSlot": "Choose a time slot",
+    "noSlots": "No slots available on this day. Try another date.",
     "confirmBooking": "Confirm Booking"
   },
   "visits": {
@@ -452,6 +458,7 @@
     "networkOffline": "Offline",
     "cameraPermission": "Camera & mic permission required to join. Allow access from your browser and try again.",
     "cameraUnavailable": "Camera or microphone unavailable",
+    "retryCamera": "Try again",
     "cameraOn": "Camera on",
     "cameraOff": "Camera off",
     "micOn": "Mic on",
@@ -524,5 +531,23 @@
     "rxSaved": "Prescription saved",
     "rxSaveFailed": "Could not save prescription",
     "prescriptionSaved": "Prescription saved successfully. The patient can now view it."
+  },
+  "chat": {
+    "listSubtitle": "Chat privately with your doctor",
+    "doctorInbox": "Patient Messages",
+    "doctorInboxSub": "Private conversations with patients",
+    "noChats": "No messages yet",
+    "noChatsSub": "Your doctor will appear here when they message you.",
+    "noChatsDoctor": "No conversations yet",
+    "noChatsDoctorSub": "Messages from your patients will appear here.",
+    "tapToStart": "Tap to start a conversation",
+    "typeMessage": "Type a message...",
+    "send": "Send",
+    "attach": "Attach a file",
+    "empty": "Say hello to start the conversation",
+    "sendFailed": "Could not send message",
+    "uploadFailed": "Could not upload file",
+    "patient": "Patient",
+    "doctorTitle": "Chat with your doctor"
   }
 }

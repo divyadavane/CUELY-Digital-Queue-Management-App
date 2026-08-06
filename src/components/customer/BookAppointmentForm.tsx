@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { bookAppointmentAction } from "@/actions/queue";
-import { Calendar, Clock, AlertTriangle } from "lucide-react";
+import { Calendar, Clock, AlertTriangle, Loader2 } from "lucide-react";
 import { CountryPhoneInput } from "@/components/ui/country-phone-input";
 
 interface BookAppointmentFormProps {
@@ -29,13 +29,39 @@ export function BookAppointmentForm({ queueId, onBooked }: BookAppointmentFormPr
     const today = new Date();
     return today.toISOString().split("T")[0];
   });
-  const [time, setTime] = useState("10:00");
+  const [time, setTime] = useState("");
+  const [slots, setSlots] = useState<{ start: string; available: boolean }[] | null>(null);
+  const [loadingSlots, setLoadingSlots] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // fetch live availability whenever doctor / date / type changes
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingSlots(true);
+    setTime("");
+    fetch(
+      `/api/slots?queueId=${encodeURIComponent(queueId)}&date=${date}&appointmentType=${emergencyType}`
+    )
+      .then((r) => r.json())
+      .then((res) => {
+        if (cancelled) return;
+        setSlots(res.slots || []);
+      })
+      .catch(() => !cancelled && setSlots([]))
+      .finally(() => !cancelled && setLoadingSlots(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [queueId, date, emergencyType]);
 
   const handleBook = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !phone) {
       toast.error(t("book.nameRequired"));
+      return;
+    }
+    if (!time) {
+      toast.error(t("book.pickSlot"));
       return;
     }
 
@@ -137,12 +163,30 @@ export function BookAppointmentForm({ queueId, onBooked }: BookAppointmentFormPr
               <Clock className="w-4 h-4 text-accent" />
               {t("book.time")}
             </label>
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              className="w-full bg-background border border-border rounded-xl px-3 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-accent transition-all text-sm"
-            />
+            {loadingSlots ? (
+              <div className="flex items-center h-[46px]">
+                <Loader2 className="w-4 h-4 animate-spin text-accent" />
+              </div>
+            ) : (
+              <select
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                disabled={!slots || slots.filter((s) => s.available).length === 0}
+                className="w-full bg-background border border-border rounded-xl px-3 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-accent transition-all text-sm disabled:opacity-50"
+              >
+                <option value="">{t("book.pickSlot")}</option>
+                {(slots || [])
+                  .filter((s) => s.available)
+                  .map((s) => (
+                    <option key={s.start} value={s.start}>
+                      {s.start}
+                    </option>
+                  ))}
+              </select>
+            )}
+            {slots && slots.filter((s) => s.available).length === 0 && !loadingSlots && (
+              <p className="text-xs text-amber-600 mt-1">{t("book.noSlots")}</p>
+            )}
           </div>
         </div>
 

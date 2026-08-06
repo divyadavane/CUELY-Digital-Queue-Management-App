@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPortalSession } from "@/lib/portal/session";
 import { getPortalAppointments } from "@/lib/portal/data";
 import { createServiceClient } from "@/lib/supabaseService";
+import { isSlotAvailable } from "@/lib/schedule";
 
 export async function GET(req: NextRequest) {
   const session = await getPortalSession(req);
@@ -27,6 +28,16 @@ export async function POST(req: NextRequest) {
 
     if (!queueId || !date) {
       return NextResponse.json({ error: "Queue and date are required" }, { status: 400 });
+    }
+
+    if (time) {
+      const available = await isSlotAvailable(queueId, date, time, (emergencyType || "routine") as any);
+      if (!available) {
+        return NextResponse.json(
+          { error: "That time slot is no longer available. Please pick another time." },
+          { status: 409 }
+        );
+      }
     }
 
     const supabase = createServiceClient();

@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
+import { useUnreadChatCount } from "@/hooks/useUnreadChatCount";
 import {
   CalendarDays,
   History,
   LayoutDashboard,
   LogOut,
+  MessageSquare,
   Star,
   User,
   Video,
@@ -23,14 +25,24 @@ import { VisitsSection } from "@/components/portal/sections/VisitsSection";
 import { RatingsSection } from "@/components/portal/sections/RatingsSection";
 import { BillingSection } from "@/components/portal/sections/BillingSection";
 import { ConsultationsSection } from "@/components/portal/sections/ConsultationsSection";
+import { MessagesSection } from "@/components/portal/sections/MessagesSection";
 import { ProfileSection } from "@/components/portal/sections/ProfileSection";
 
-type Tab = "dashboard" | "appointments" | "visits" | "consultations" | "ratings" | "billing" | "profile";
+type Tab =
+  | "dashboard"
+  | "appointments"
+  | "visits"
+  | "consultations"
+  | "messages"
+  | "ratings"
+  | "billing"
+  | "profile";
 
 const NAV_ITEMS: { key: Tab; labelKey: string; icon: React.ReactNode }[] = [
   { key: "dashboard", labelKey: "portal.nav.home", icon: <LayoutDashboard className="w-5 h-5" /> },
   { key: "appointments", labelKey: "portal.nav.appts", icon: <CalendarDays className="w-5 h-5" /> },
   { key: "consultations", labelKey: "portal.nav.consultations", icon: <Video className="w-5 h-5" /> },
+  { key: "messages", labelKey: "portal.nav.messages", icon: <MessageSquare className="w-5 h-5" /> },
   { key: "visits", labelKey: "portal.nav.visits", icon: <History className="w-5 h-5" /> },
   { key: "ratings", labelKey: "portal.nav.ratings", icon: <Star className="w-5 h-5" /> },
   { key: "billing", labelKey: "portal.nav.billing", icon: <Wallet className="w-5 h-5" /> },
@@ -42,6 +54,7 @@ export function PatientPortal() {
   const router = useRouter();
   const { profile, loading, refresh } = usePortalSession();
   const [tab, setTab] = useState<Tab>("dashboard");
+  const { unread, refresh: refreshUnread } = useUnreadChatCount({ role: "patient" });
 
   if (loading) {
     return (
@@ -100,6 +113,7 @@ export function PatientPortal() {
         )}
         {tab === "appointments" && <AppointmentsSection />}
         {tab === "consultations" && <ConsultationsSection />}
+        {tab === "messages" && <MessagesSection onRefresh={refreshUnread} />}
         {tab === "visits" && <VisitsSection />}
         {tab === "ratings" && <RatingsSection />}
         {tab === "billing" && <BillingSection />}
@@ -110,7 +124,7 @@ export function PatientPortal() {
 
       {/* Bottom navigation (mobile-first) */}
       <nav className="fixed bottom-0 inset-x-0 z-40 bg-[#0b101d]/95 backdrop-blur-xl border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
-        <div className="max-w-lg mx-auto grid grid-cols-7 px-2">
+        <div className="max-w-lg mx-auto grid grid-cols-4 sm:grid-cols-8 px-2">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.key}
@@ -122,7 +136,14 @@ export function PatientPortal() {
               {tab === item.key && (
                 <span className="absolute top-0 w-10 h-0.5 rounded-full bg-blue-500" />
               )}
-              {item.icon}
+              <span className="relative">
+                {item.icon}
+                {item.key === "messages" && unread > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center border border-[#0b101d]">
+                    {unread > 99 ? "99+" : unread}
+                  </span>
+                )}
+              </span>
               <span className="text-[9px] font-bold tracking-wide">{t(item.labelKey)}</span>
             </button>
           ))}

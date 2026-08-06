@@ -216,8 +216,14 @@ export function CallView({
   const otherPeers = peers.filter((p) => p.role !== role).length;
 
   // Doctor's screen share shows on the doctor's own main tile; on the
-  // patient side it arrives over the remote stream.
-  const mainStream = isPatient ? remoteStream : screenSharing ? screenStream : remoteStream;
+  // patient side it arrives over the remote stream. Main tile = the other
+  // person; self always stays in the small corner PIP (standard video-call
+  // layout).
+  const mainStream = isPatient
+    ? remoteStream
+    : screenSharing
+      ? screenStream
+      : remoteStream;
   const mainLabel = isPatient
     ? doctorName
     : screenSharing

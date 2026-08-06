@@ -196,6 +196,28 @@ export function DashboardClient({
         </div>
       )}
 
+      {(activeQueue as any)?.assistance_requested_at && (
+        <div className="w-full bg-red-500/10 text-red-300 p-3 text-sm font-bold border-b border-red-500/30 backdrop-blur-md flex items-center justify-center gap-3 flex-wrap">
+          <span className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+            {activeQueue?.doctor_name || activeQueue?.name} requested front-desk assistance.
+          </span>
+          <button
+            onClick={async () => {
+              const res = await fetch("/api/dashboard/doctor/actions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "clear_assistance", queueId: activeQueueId }),
+              });
+              if (res.ok) toast.success("Assistance request cleared");
+            }}
+            className="px-3 py-1.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-200 text-xs font-bold border border-red-500/30"
+          >
+            Mark handled
+          </button>
+        </div>
+      )}
+
       <main className="flex-1 overflow-y-auto p-4 md:p-8 max-w-7xl mx-auto w-full">
         {activeQueueId ? (
           <>
