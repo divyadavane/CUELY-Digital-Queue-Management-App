@@ -60,22 +60,31 @@ function iceServers(): RTCIceServer[] {
 
 // getUserMedia can fail transiently when the camera is momentarily busy
 // (e.g. another tab still holding it). Retry with a short backoff so the call
-// can recover instead of dying on the first attempt.
+// can recover instead of dying on the first attempt. If the video device keeps
+// failing, fall back to audio-only so the participant can still join and talk.
 async function acquireCamera(): Promise<MediaStream> {
-  const constraints: MediaStreamConstraints = {
+  const videoAudio: MediaStreamConstraints = {
     video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+  };
+  const audioOnly: MediaStreamConstraints = {
     audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
   };
   let lastError: unknown;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      return await navigator.mediaDevices.getUserMedia(constraints);
+      return await navigator.mediaDevices.getUserMedia(videoAudio);
     } catch (e) {
       lastError = e;
       if (attempt < 2) {
         await new Promise((resolve) => setTimeout(resolve, 800 * (attempt + 1)));
       }
     }
+  }
+  try {
+    return await navigator.mediaDevices.getUserMedia(audioOnly);
+  } catch (e) {
+    lastError = e;
   }
   const err = lastError as DOMException | undefined;
   if (err?.name === "NotAllowedError") {
@@ -181,6 +190,7 @@ export function useVideoCall({
       console.debug("[video-debug] ensureLocalStream: using handoff stream", initialStream.id, initialStream.getTracks().map((t) => `${t.kind}:${t.readyState}`));
       localStreamRef.current = initialStream;
       setLocalStream(initialStream);
+      setCameraOn(initialStream.getVideoTracks().length > 0);
       return initialStream;
     }
     console.debug("[video-debug] ensureLocalStream: no usable handoff, calling getUserMedia");
@@ -188,6 +198,7 @@ export function useVideoCall({
     console.debug("[video-debug] ensureLocalStream: fresh stream", stream.id, stream.getTracks().map((t) => `${t.kind}:${t.readyState}`));
     localStreamRef.current = stream;
     setLocalStream(stream);
+    setCameraOn(stream.getVideoTracks().length > 0);
     return stream;
   }, [initialStream]);
 

@@ -45,17 +45,20 @@ export function WaitingRoom({
     };
   }, []);
 
+  // The preview holds the camera open, which can block a second tab/browser
+  // (e.g. doctor + patient side-by-side on one machine) from acquiring it.
+  // Release the preview tracks when this tab is hidden and re-acquire on return.
   useEffect(() => {
     let stream: MediaStream | null = null;
     let cancelled = false;
-    setPreviewStream(null);
-    setPreviewError(null);
-    setCameraOk(false);
-    setMicOk(false);
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: "user" }, audio: true })
-      .then((s) => {
-        if (cancelled) {
+    const acquire = async () => {
+      setPreviewStream(null);
+      setPreviewError(null);
+      setCameraOk(false);
+      setMicOk(false);
+      try {
+        const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+        if (cancelled || document.hidden) {
           s.getTracks().forEach((t) => t.stop());
           return;
         }
@@ -64,14 +67,30 @@ export function WaitingRoom({
         setCameraOk(s.getVideoTracks().length > 0);
         setMicOk(s.getAudioTracks().length > 0);
         setPreviewError(null);
-      })
-      .catch((e) => {
+      } catch (e) {
         if (cancelled) return;
-        setPreviewError(e?.name === "NotAllowedError" ? "permission" : "device");
+        const errName = e instanceof DOMException ? e.name : "";
+        setPreviewError(errName === "NotAllowedError" ? "permission" : errName === "NotReadableError" ? "busy" : "device");
         setCameraOk(false);
         setMicOk(false);
-      });
+      }
+    };
+    const onVisibility = () => {
+      if (document.hidden) {
+        // Stop tracks so another tab can use the camera; clear the UI.
+        if (!handedOffRef.current) stream?.getTracks().forEach((t) => t.stop());
+        stream = null;
+        setPreviewStream(null);
+        setCameraOk(false);
+        setMicOk(false);
+      } else {
+        acquire();
+      }
+    };
+    acquire();
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
       cancelled = true;
       // Only stop the preview tracks if they weren't handed off to the call.
       if (!handedOffRef.current) stream?.getTracks().forEach((t) => t.stop());
@@ -142,7 +161,11 @@ export function WaitingRoom({
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                 <Camera className="w-8 h-8 text-slate-600" />
                 <p className="text-xs text-slate-500">
-                  {previewError === "permission" ? t("video.cameraPermission") : t("video.cameraUnavailable")}
+                  {previewError === "permission"
+                    ? t("video.cameraPermission")
+                    : previewError === "busy"
+                      ? t("video.cameraBusy")
+                      : t("video.cameraUnavailable")}
                 </p>
                 {previewError && (
                   <button

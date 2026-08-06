@@ -68,6 +68,7 @@ const STATUS_STYLES: Record<string, string> = {
   scheduled: "bg-blue-500/15 border-blue-500/30 text-blue-300",
   cancelled: "bg-red-500/15 border-red-500/30 text-red-300",
   no_show: "bg-red-500/15 border-red-500/30 text-red-300",
+  expired: "bg-red-500/15 border-red-500/30 text-red-300",
   left: "bg-slate-500/15 border-slate-500/30 text-slate-300",
   checked_in: "bg-cyan-500/15 border-cyan-500/30 text-cyan-300",
   paid: "bg-emerald-500/15 border-emerald-500/30 text-emerald-300",

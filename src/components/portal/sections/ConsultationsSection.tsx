@@ -29,6 +29,7 @@ interface Consultation {
   id: string;
   status: string;
   scheduled_start: string;
+  expires_at: string;
   patient_name: string | null;
   doctor: {
     name: string;
@@ -69,6 +70,10 @@ interface VideoDoctor {
 const JOINABLE = new Set(["scheduled", "ready", "in_call"]);
 const ACTIVE = new Set(["scheduled", "ready", "in_call"]);
 
+function isExpired(c: { expires_at: string }): boolean {
+  return new Date(c.expires_at).getTime() < Date.now();
+}
+
 export function ConsultationsSection() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
@@ -91,8 +96,8 @@ export function ConsultationsSection() {
     fetchConsultations();
   }, [fetchConsultations]);
 
-  const upcoming = (consultations || []).filter((c) => ACTIVE.has(c.status));
-  const past = (consultations || []).filter((c) => !ACTIVE.has(c.status));
+  const upcoming = (consultations || []).filter((c) => ACTIVE.has(c.status) && !isExpired(c));
+  const past = (consultations || []).filter((c) => !ACTIVE.has(c.status) || isExpired(c));
 
   const handlePay = async (c: Consultation) => {
     if (!c.bill) return;
@@ -224,7 +229,7 @@ export function ConsultationsSection() {
                         <p className="text-sm font-bold text-white truncate">
                           {c.doctor?.doctor_name || c.doctor?.name || t("consultations.doctor")}
                         </p>
-                        <StatusPill status={c.status} />
+                        <StatusPill status={isExpired(c) ? "expired" : c.status} />
                       </div>
                       <p className="text-[11px] text-slate-400 font-medium mt-1">
                         {formatDate(c.scheduled_start.slice(0, 10), i18n.language)}

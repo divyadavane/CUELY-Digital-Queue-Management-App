@@ -8,6 +8,7 @@ interface DoctorConsultation {
   id: string;
   status: string;
   scheduled_start: string;
+  expires_at: string;
   patient_name: string | null;
   patient_phone: string;
   doctor_name: string | null;
@@ -17,6 +18,10 @@ interface DoctorConsultation {
 
 const ACTIVE = new Set(["scheduled", "ready", "in_call"]);
 const JOINABLE = new Set(["scheduled", "ready", "in_call"]);
+
+function isExpired(c: { expires_at: string }): boolean {
+  return new Date(c.expires_at).getTime() < Date.now();
+}
 
 function fmt(iso: string) {
   const d = new Date(iso);
@@ -36,6 +41,7 @@ const STATUS_STYLE: Record<string, string> = {
   completed: "bg-emerald-500/15 border-emerald-500/30 text-emerald-300",
   cancelled: "bg-red-500/15 border-red-500/30 text-red-300",
   missed: "bg-red-500/15 border-red-500/30 text-red-300",
+  expired: "bg-red-500/15 border-red-500/30 text-red-300",
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -69,8 +75,8 @@ export function VideoConsultationsPanel({ queueId }: { queueId: string }) {
     fetchConsultations();
   }, [fetchConsultations]);
 
-  const upcoming = (consultations || []).filter((c) => ACTIVE.has(c.status));
-  const past = (consultations || []).filter((c) => !ACTIVE.has(c.status));
+  const upcoming = (consultations || []).filter((c) => ACTIVE.has(c.status) && !isExpired(c));
+  const past = (consultations || []).filter((c) => !ACTIVE.has(c.status) || isExpired(c));
 
   if (consultations === null) {
     return (
@@ -148,7 +154,7 @@ export function VideoConsultationsPanel({ queueId }: { queueId: string }) {
                       </p>
                       <p className="text-[11px] text-slate-500 font-medium mt-1">{fmt(c.scheduled_start)}</p>
                     </div>
-                    <StatusBadge status={c.status} />
+                    <StatusBadge status={isExpired(c) ? "expired" : c.status} />
                   </div>
                 ))}
               </>
