@@ -111,7 +111,7 @@ create policy "Owners can update own business" on public.businesses for update
 alter table public.admins enable row level security;
 drop policy if exists "Admins can read own business admins" on public.admins;
 create policy "Admins can read own business admins" on public.admins for select
-  using (business_id in (select a.business_id from public.admins a where a.id = auth.uid()));
+  using (id = auth.uid() or public.is_admin_of_business(business_id));
 
 -- QUEUES RLS
 alter table public.queues enable row level security;
