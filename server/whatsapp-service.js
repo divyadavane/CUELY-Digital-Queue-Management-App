@@ -186,6 +186,41 @@ function sendWhatsAppMessage(phoneNumber, message) {
 // Express API Endpoints
 // ==========================================
 
+// GET /api/qr - View Auto-Refreshing QR Code
+app.get('/api/qr', (req, res) => {
+  if (isReady || clientStatus !== 'QR_REQUIRED') {
+    return res.send(`
+      <body style="display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif; background:#f4f4f5;">
+        <div style="text-align:center; background:white; padding:3rem; border-radius:1rem; box-shadow:0 4px 6px rgba(0,0,0,0.1);">
+          <h1 style="color:#10b981;">✅ Authenticated!</h1>
+          <p>WhatsApp is connected. You can close this page.</p>
+        </div>
+      </body>
+    `);
+  }
+  
+  if (!latestQr) {
+    return res.send('<meta http-equiv="refresh" content="2"><h2>Generating QR... Please wait.</h2>');
+  }
+
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(latestQr)}`;
+  
+  res.send(`
+    <html>
+      <head>
+        <meta http-equiv="refresh" content="5">
+      </head>
+      <body style="display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif; background-color:#f4f4f5;">
+        <div style="text-align:center; padding: 2rem; background:white; border-radius:1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          <h2>Scan with WhatsApp (Linked Devices)</h2>
+          <img src="${qrImageUrl}" alt="WhatsApp QR Code" style="margin:1rem 0; width:400px; height:400px;" />
+          <p style="color:#6b7280; font-size:14px;">Auto-refreshes every 5 seconds to prevent expiration.</p>
+        </div>
+      </body>
+    </html>
+  `);
+});
+
 // GET /api/status - Check WhatsApp connection status
 app.get('/api/status', (req, res) => {
   res.json({
