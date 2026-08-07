@@ -129,17 +129,7 @@ async function processQueue() {
 
     try {
       const cleanDigits = formattedPhone.replace(/\D/g, '');
-      
-      // Look up target WhatsApp registered number ID automatically
-      let targetJid = `${cleanDigits}@c.us`;
-      try {
-        const numberId = await client.getNumberId(cleanDigits);
-        if (numberId && numberId._serialized) {
-          targetJid = numberId._serialized;
-        }
-      } catch (numErr) {
-        console.warn(`[Number Lookup Warning] Using fallback format ${targetJid}:`, numErr?.message);
-      }
+      const targetJid = `${cleanDigits}@c.us`;
 
       console.log(`[Automatic WhatsApp Sending] To: ${targetJid}`);
       await client.sendMessage(targetJid, textMessage);
