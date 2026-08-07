@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabaseServer";
 
 const pushServicePort = process.env.PUSH_PORT || "3006";
+const pushServiceUrl = process.env.PUSH_SERVICE_URL || `http://localhost:${pushServicePort}`;
 
 export async function sendPushNotification(ticketId: string, title: string, body: string, url: string = "/") {
   const supabase = await createClient();
@@ -18,7 +19,7 @@ export async function sendPushNotification(ticketId: string, title: string, body
 
     const payload = { title, body, url };
     
-    const pushRes = await fetch(`http://localhost:${pushServicePort}/api/notify-push`, {
+    const pushRes = await fetch(`${pushServiceUrl}/api/notify-push`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
