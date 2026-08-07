@@ -74,7 +74,7 @@ export function BillingSection() {
   }, [fetchBills]);
 
   const fetchRazorpayKey = async (): Promise<string> => {
-    const res = await fetch("/api/portal/payments/key");
+    const res = await fetch("/api/portal/payments/key", { cache: "no-store" });
     const body = await res.json().catch(() => ({}));
     return body?.key || "";
   };
