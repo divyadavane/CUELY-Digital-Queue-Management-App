@@ -65,6 +65,7 @@ create index if not exists idx_serving_stats_queue_recorded on public.serving_st
 -- PART 2: WAIT-TIME ESTIMATION FUNCTION
 -- ============================================================
 
+drop function if exists public.estimate_wait(uuid, int);
 create or replace function public.estimate_wait(p_queue_id uuid, p_position int)
 returns int language plpgsql stable security definer as $$
 declare
@@ -98,34 +99,53 @@ $$;
 
 -- BUSINESSES RLS
 alter table public.businesses enable row level security;
+drop policy if exists "Admins can read own business" on public.businesses;
 create policy "Admins can read own business" on public.businesses for select
   using (exists (select 1 from public.admins where admins.id = auth.uid() and admins.business_id = businesses.id));
+
+drop policy if exists "Owners can update own business" on public.businesses;
 create policy "Owners can update own business" on public.businesses for update
   using (exists (select 1 from public.admins where admins.id = auth.uid() and admins.business_id = businesses.id and admins.role = 'owner'));
 
 -- ADMINS RLS
 alter table public.admins enable row level security;
+drop policy if exists "Admins can read own business admins" on public.admins;
 create policy "Admins can read own business admins" on public.admins for select
   using (business_id in (select a.business_id from public.admins a where a.id = auth.uid()));
 
 -- QUEUES RLS
 alter table public.queues enable row level security;
+drop policy if exists "Public can read active queues" on public.queues;
 create policy "Public can read active queues" on public.queues for select using (is_active = true);
+
+drop policy if exists "Admins can insert queues for own business" on public.queues;
 create policy "Admins can insert queues for own business" on public.queues for insert with check (public.is_admin_of_business(business_id));
+
+drop policy if exists "Admins can update own business queues" on public.queues;
 create policy "Admins can update own business queues" on public.queues for update using (public.is_admin_of_business(business_id));
+
+drop policy if exists "Admins can delete own business queues" on public.queues;
 create policy "Admins can delete own business queues" on public.queues for delete using (public.is_admin_of_business(business_id));
 
 -- TICKETS RLS
 alter table public.tickets enable row level security;
+drop policy if exists "Public can read queue tickets" on public.tickets;
 create policy "Public can read queue tickets" on public.tickets for select using (true);
+
+drop policy if exists "Allow insert via join_queue function" on public.tickets;
 create policy "Allow insert via join_queue function" on public.tickets for insert with check (true);
+
+drop policy if exists "Admins can update tickets for their business queues" on public.tickets;
 create policy "Admins can update tickets for their business queues" on public.tickets for update
   using (public.is_admin_of_business(public.get_business_id_for_queue(queue_id)));
 
 -- SERVING_STATS RLS
 alter table public.serving_stats enable row level security;
+drop policy if exists "Admins can read own business stats" on public.serving_stats;
 create policy "Admins can read own business stats" on public.serving_stats for select
   using (public.is_admin_of_business(public.get_business_id_for_queue(queue_id)));
+
+drop policy if exists "Allow insert via mark_served function" on public.serving_stats;
 create policy "Allow insert via mark_served function" on public.serving_stats for insert with check (true);
 
 
@@ -133,6 +153,7 @@ create policy "Allow insert via mark_served function" on public.serving_stats fo
 -- PART 4: CORE RPC FUNCTIONS
 -- ============================================================
 
+drop function if exists public.join_queue(uuid, text);
 create or replace function public.join_queue(p_queue_id uuid, p_phone text default null)
 returns jsonb language plpgsql security definer as $$
 declare
@@ -152,6 +173,7 @@ begin
     'queue_name', v_queue.name, 'position', v_position, 'estimated_wait_seconds', v_estimated_wait);
 end; $$;
 
+drop function if exists public.call_next(uuid);
 create or replace function public.call_next(p_queue_id uuid)
 returns jsonb language plpgsql security definer as $$
 declare v_ticket record; v_business_id uuid;
@@ -168,6 +190,7 @@ begin
     'customer_phone', v_ticket.customer_phone, 'status', 'called');
 end; $$;
 
+drop function if exists public.mark_served(uuid);
 create or replace function public.mark_served(p_ticket_id uuid)
 returns jsonb language plpgsql security definer as $$
 declare v_ticket record; v_business_id uuid; v_duration int;
@@ -188,6 +211,7 @@ begin
     'duration_seconds', v_duration, 'status', 'served');
 end; $$;
 
+drop function if exists public.mark_no_show(uuid);
 create or replace function public.mark_no_show(p_ticket_id uuid)
 returns jsonb language plpgsql security definer as $$
 declare v_ticket record; v_business_id uuid;
@@ -204,6 +228,7 @@ begin
   return jsonb_build_object('ticket_id', p_ticket_id, 'token_number', v_ticket.token_number, 'status', 'no_show');
 end; $$;
 
+drop function if exists public.leave_queue(uuid);
 create or replace function public.leave_queue(p_ticket_id uuid)
 returns jsonb language plpgsql security definer as $$
 declare v_ticket record;
@@ -216,6 +241,7 @@ begin
   return jsonb_build_object('ticket_id', p_ticket_id, 'token_number', v_ticket.token_number, 'status', 'left');
 end; $$;
 
+drop function if exists public.get_queue_status(uuid);
 create or replace function public.get_queue_status(p_queue_id uuid)
 returns jsonb language plpgsql security definer as $$
 declare v_queue record; v_total_waiting int; v_current_token int; v_avg_duration int;
@@ -238,4 +264,12 @@ end; $$;
 -- PART 5: ENABLE REALTIME
 -- ============================================================
 
-alter publication supabase_realtime add table public.tickets;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'tickets'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.tickets;
+  END IF;
+END $$;
