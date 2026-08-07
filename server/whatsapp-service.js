@@ -257,9 +257,9 @@ app.post('/api/notify-token', async (req, res) => {
       }
     }
 
-    // Queue automatic WhatsApp background message
-    const result = await sendWhatsAppMessage(phoneNumber, textMessage);
-    return res.json(result);
+    // Queue automatic WhatsApp background message (fire and forget)
+    sendWhatsAppMessage(phoneNumber, textMessage).catch(err => console.error('Background send error:', err));
+    return res.json({ success: true, queued: true });
   } catch (err) {
     console.error('API Error in /api/notify-token:', err);
     return res.status(500).json({ success: false, error: err.message });
