@@ -105,37 +105,8 @@ export async function sendWhatsAppNotification({
   let errorMsg: string | undefined = undefined;
   let sentViaService = false;
 
-  // 1. First, attempt to send via local whatsapp-web.js service if running (or Render service)
-  try {
-    const serviceRes = await fetch(`${whatsappServiceUrl}/api/notify-token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        phoneNumber: cleanDigits,
-        tokenNumber: variables.token_number || "0",
-        clinicName,
-        status: triggerType,
-        roomNumber: variables.room_number || "Room 1",
-        waitTime: variables.wait_time ? `${variables.wait_time} mins` : "5 mins",
-        message: messageBody,
-      }),
-    });
-
-    if (serviceRes.ok) {
-      const sData = await serviceRes.json();
-      if (sData.success) {
-        sentViaService = true;
-        console.log(`[WhatsApp Web Service] Sent successfully to ${formattedPhone}`);
-      } else {
-        errorMsg = sData.error;
-      }
-    }
-  } catch (err) {
-    // Service not running locally, will fall back to Meta API or wa.me URL
-  }
-
-  // 2. If local service was not used, try Meta WhatsApp Cloud API if configured
-  if (!sentViaService && whatsappApiToken && whatsappPhoneNumberId) {
+  // 1. Try Meta WhatsApp Cloud API if configured FIRST
+  if (whatsappApiToken && whatsappPhoneNumberId) {
     try {
       const response = await fetch(`https://graph.facebook.com/v18.0/${whatsappPhoneNumberId}/messages`, {
         method: "POST",
@@ -157,10 +128,42 @@ export async function sendWhatsAppNotification({
         throw new Error(resData?.error?.message || "WhatsApp Meta API Error");
       }
       console.log(`[WhatsApp Meta API Direct Sent] to ${formattedPhone}`);
+      sentViaService = true; // Mark successfully sent
     } catch (err: any) {
       console.error("[WhatsApp Send Error]:", err);
       status = "failed";
       errorMsg = err?.message || "Failed to deliver WhatsApp message via Meta API";
+    }
+  }
+
+  // 2. Fall back to local service if Meta API was not used or failed
+  if (!sentViaService) {
+    try {
+      const serviceRes = await fetch(`${whatsappServiceUrl}/api/notify-token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phoneNumber: cleanDigits,
+          tokenNumber: variables.token_number || "0",
+          clinicName,
+          status: triggerType,
+          roomNumber: variables.room_number || "Room 1",
+          waitTime: variables.wait_time ? `${variables.wait_time} mins` : "5 mins",
+          message: messageBody,
+        }),
+      });
+
+      if (serviceRes.ok) {
+        const sData = await serviceRes.json();
+        if (sData.success) {
+          sentViaService = true;
+          console.log(`[WhatsApp Web Service] Sent successfully to ${formattedPhone}`);
+        } else {
+          errorMsg = sData.error;
+        }
+      }
+    } catch (err) {
+      // Service not running locally
     }
   }
 
