@@ -1,15 +1,13 @@
 import crypto from "crypto";
 
-const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
 const RAZORPAY_API = "https://api.razorpay.com/v1";
 
 export function razorpayConfigured(): boolean {
-  return Boolean(RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET);
+  return Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
 }
 
 function authHeader(): string {
-  return "Basic " + Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString("base64");
+  return "Basic " + Buffer.from(`${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`).toString("base64");
 }
 
 export interface RazorpayOrder {
@@ -65,9 +63,9 @@ export function verifyRazorpaySignature({
   paymentId: string;
   signature: string;
 }): boolean {
-  if (!RAZORPAY_KEY_SECRET) return false;
+  if (!process.env.RAZORPAY_KEY_SECRET) return false;
   const expected = crypto
-    .createHmac("sha256", RAZORPAY_KEY_SECRET)
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
     .update(`${orderId}|${paymentId}`)
     .digest("hex");
   return expected === signature;
