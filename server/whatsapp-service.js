@@ -5,7 +5,7 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 
 const app = express();
-const PORT = process.env.WHATSAPP_PORT || 3005;
+const PORT = process.env.PORT || process.env.WHATSAPP_PORT || 3005;
 
 app.use(cors());
 app.use(express.json());
