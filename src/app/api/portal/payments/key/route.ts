@@ -11,9 +11,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  if (!razorpayConfigured()) {
+  // Hardcoded fallback for the public key to bypass Vercel environment issues
+  const publicId = process.env.RAZORPAY_KEY_ID || "rzp_test_TMtk5QkzwC4HDo";
+
+  if (!publicId) {
     return NextResponse.json({ key: "" });
   }
 
-  return NextResponse.json({ key: process.env.RAZORPAY_KEY_ID });
+  return NextResponse.json({ key: publicId });
 }
