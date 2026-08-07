@@ -216,32 +216,8 @@ export async function sendOtpWhatsApp(
   let errorMsg: string | undefined = undefined;
   let sentViaService = false;
 
-  // 1. First, attempt to send via local whatsapp-web.js service if running (or Render service)
-  try {
-    const serviceRes = await fetch(`${whatsappServiceUrl}/api/notify-token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        phoneNumber: cleanDigits,
-        message: messageBody,
-      }),
-    });
-
-    if (serviceRes.ok) {
-      const sData = await serviceRes.json();
-      if (sData.success) {
-        sentViaService = true;
-        console.log(`[WhatsApp Web Service] OTP sent to ${formattedPhone}`);
-      } else {
-        errorMsg = sData.error;
-      }
-    }
-  } catch (err) {
-    // Service not running locally, will fall back to Meta API
-  }
-
-  // 2. If local service was not used, try Meta WhatsApp Cloud API if configured
-  if (!sentViaService && whatsappApiToken && whatsappPhoneNumberId) {
+  // 1. Try Meta WhatsApp Cloud API if configured FIRST
+  if (whatsappApiToken && whatsappPhoneNumberId) {
     try {
       const response = await fetch(`https://graph.facebook.com/v18.0/${whatsappPhoneNumberId}/messages`, {
         method: "POST",
@@ -263,10 +239,37 @@ export async function sendOtpWhatsApp(
         throw new Error(resData?.error?.message || "WhatsApp Meta API Error");
       }
       console.log(`[WhatsApp Meta API] OTP sent to ${formattedPhone}`);
+      sentViaService = true; // Mark as successfully sent so we don't try fallback
     } catch (err: any) {
       console.error("[WhatsApp OTP Send Error]:", err);
       status = "failed";
       errorMsg = err?.message || "Failed to deliver OTP via WhatsApp";
+    }
+  }
+
+  // 2. Fall back to local service if Meta API was not used or failed
+  if (!sentViaService) {
+    try {
+      const serviceRes = await fetch(`${whatsappServiceUrl}/api/notify-token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phoneNumber: cleanDigits,
+          message: messageBody,
+        }),
+      });
+
+      if (serviceRes.ok) {
+        const sData = await serviceRes.json();
+        if (sData.success) {
+          sentViaService = true;
+          console.log(`[WhatsApp Web Service] OTP sent to ${formattedPhone}`);
+        } else {
+          errorMsg = sData.error;
+        }
+      }
+    } catch (err) {
+      // Local service failed
     }
   }
 
