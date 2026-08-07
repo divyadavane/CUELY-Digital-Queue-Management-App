@@ -58,10 +58,12 @@ const client = new Client({
 
 let isReady = false;
 let clientStatus = 'INITIALIZING';
+let latestQr = null;
 
 // QR Code Event
 client.on('qr', (qr) => {
   clientStatus = 'QR_REQUIRED';
+  latestQr = qr;
   console.log('\n======================================================');
   console.log('📱 SCAN THIS QR CODE WITH YOUR WHATSAPP (LINKED DEVICES):');
   console.log('======================================================\n');
@@ -190,7 +192,8 @@ app.get('/api/status', (req, res) => {
     success: true,
     connected: isReady,
     status: clientStatus,
-    queueLength: messageQueue.length
+    queueLength: messageQueue.length,
+    qrCode: clientStatus === 'QR_REQUIRED' ? latestQr : null
   });
 });
 
