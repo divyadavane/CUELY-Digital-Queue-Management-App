@@ -6,6 +6,7 @@ import { normalizeLanguage } from "@/lib/i18n/config";
 const whatsappApiToken = process.env.WHATSAPP_API_TOKEN;
 const whatsappPhoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 const whatsappServicePort = process.env.WHATSAPP_PORT || "3005";
+const whatsappServiceUrl = process.env.WHATSAPP_SERVICE_URL || `http://localhost:${whatsappServicePort}`;
 
 /**
  * Resolve the language for a notification: the patient's preferred language
@@ -104,9 +105,9 @@ export async function sendWhatsAppNotification({
   let errorMsg: string | undefined = undefined;
   let sentViaService = false;
 
-  // 1. First, attempt to send via local whatsapp-web.js service if running
+  // 1. First, attempt to send via local whatsapp-web.js service if running (or Render service)
   try {
-    const serviceRes = await fetch(`http://localhost:${whatsappServicePort}/api/notify-token`, {
+    const serviceRes = await fetch(`${whatsappServiceUrl}/api/notify-token`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -215,9 +216,9 @@ export async function sendOtpWhatsApp(
   let errorMsg: string | undefined = undefined;
   let sentViaService = false;
 
-  // 1. First, attempt to send via local whatsapp-web.js service if running
+  // 1. First, attempt to send via local whatsapp-web.js service if running (or Render service)
   try {
-    const serviceRes = await fetch(`http://localhost:${whatsappServicePort}/api/notify-token`, {
+    const serviceRes = await fetch(`${whatsappServiceUrl}/api/notify-token`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
