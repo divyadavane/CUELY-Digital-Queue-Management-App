@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, ArrowRight } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { HOW_IT_WORKS_STEPS } from '@/lib/landing-data';
 import { RevealOnScroll } from '@/components/ui/RevealOnScroll';
 import { GradientText } from '@/components/ui/GradientText';
@@ -16,7 +16,7 @@ export function HowItWorksSection() {
         <RevealOnScroll className="text-center max-w-3xl mx-auto mb-20">
           <div className="inline-flex items-center gap-2.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-xs font-semibold text-blue-400 mb-4 shadow-sm">
             <CuelyLogo size="xs" showGlow />
-            <span>3-Step Workflow</span>
+            <span>4-Step Workflow</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
             How Cuely <GradientText>Transforms Your Lobby</GradientText>
@@ -26,27 +26,27 @@ export function HowItWorksSection() {
           </p>
         </RevealOnScroll>
 
-        {/* 3-Step Container with Connecting Line */}
+        {/* 4-Step Container with Connecting Dashed Line */}
         <div className="relative">
-          {/* Horizontal Connecting Line (Desktop) */}
-          <div className="hidden lg:block absolute top-1/2 left-12 right-12 h-0.5 bg-gradient-to-r from-blue-500/30 via-indigo-500/50 to-cyan-500/30 -translate-y-1/2 z-0" />
+          {/* Horizontal Connecting Dashed Line (Desktop) */}
+          <div className="hidden lg:block absolute top-1/2 left-12 right-12 h-px border-t-2 border-dashed border-white/20 -translate-y-1/2 z-0" />
 
-          <RevealOnScroll stagger className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
+          <RevealOnScroll stagger className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8 relative z-10">
             {HOW_IT_WORKS_STEPS.map((step, idx) => (
-              <GlowCard key={step.number} className="h-full flex flex-col justify-between" glowColor="rgba(59, 130, 246, 0.2)">
+              <GlowCard key={step.number} className="h-full flex flex-col justify-between relative bg-[#0a0e17]/80 backdrop-blur-xl" glowColor="rgba(59, 130, 246, 0.2)">
                 <div>
                   {/* Step Number Badge */}
                   <div className="flex items-center justify-between mb-6">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-lg font-extrabold text-white font-mono shadow-lg shadow-blue-500/25">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-lg font-extrabold text-white font-mono shadow-lg shadow-blue-500/25 relative z-10">
                       {step.number}
                     </span>
-                    <span className="text-xs font-bold uppercase tracking-wider text-white/40 font-mono flex items-center gap-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-white/40 font-mono flex items-center gap-1">
                       <CuelyLogo size="xs" showGlow={false} />
-                      Step {idx + 1} of 3
+                      Step {idx + 1} of 4
                     </span>
                   </div>
 
-                  <h3 className="text-xl font-bold text-white tracking-tight mb-3">
+                  <h3 className="text-lg font-bold text-white tracking-tight mb-3">
                     {step.title}
                   </h3>
                   <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-6">
@@ -56,8 +56,8 @@ export function HowItWorksSection() {
                   {/* Bullet details */}
                   <ul className="space-y-2.5 pt-4 border-t border-white/5">
                     {step.details.map((detail, dIdx) => (
-                      <li key={dIdx} className="flex items-center gap-2 text-xs text-white/80">
-                        <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                      <li key={dIdx} className="flex items-center gap-2 text-[11px] text-white/80">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
                         <span>{detail}</span>
                       </li>
                     ))}

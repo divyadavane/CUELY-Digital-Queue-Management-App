@@ -177,7 +177,8 @@ export function PortalLogin() {
 
               <h2 className="text-lg font-extrabold mb-1">{t("login.enterCode")}</h2>
               <p className="text-xs text-slate-400 font-medium mb-6">
-                {t("login.sentTo", { phone: <span className="text-white font-bold">{phone}</span> })}
+                {t("login.sentTo", { phone: "" })}
+                <span className="text-white font-bold">{phone}</span>
               </p>
 
               {deliveryMsg && (

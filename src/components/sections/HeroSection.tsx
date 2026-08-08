@@ -14,8 +14,17 @@ import { heroBadgeVariant, floatAnimation, glowPulseAnimation } from '@/lib/moti
 
 export function HeroSection() {
   const [tokenNum, setTokenNum] = useState('A-104');
-  const [status, setStatus] = useState('WAITING');
+  const [status, setStatus] = useState<'WAITING' | 'ALMOST' | 'CALLED' | 'SERVED'>('WAITING');
   const [position, setPosition] = useState(2);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    const listener = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', listener);
+    return () => mediaQuery.removeEventListener('change', listener);
+  }, []);
 
   // Live simulation ticker for the ticket mockup
   useEffect(() => {
@@ -23,17 +32,21 @@ export function HeroSection() {
       setStatus((prev) => {
         if (prev === 'WAITING') {
           setPosition(1);
+          return 'ALMOST';
+        }
+        if (prev === 'ALMOST') {
+          setPosition(0);
           return 'CALLED';
         }
         if (prev === 'CALLED') {
-          setPosition(0);
           return 'SERVED';
         }
+        // Reset after SERVED
         setPosition(Math.floor(Math.random() * 3 + 2));
         setTokenNum(`A-${Math.floor(Math.random() * 800 + 100)}`);
         return 'WAITING';
       });
-    }, 3500);
+    }, 4000); // Realistic 4s intervals
     return () => clearInterval(interval);
   }, []);
 
@@ -49,7 +62,7 @@ export function HeroSection() {
           <div className="lg:col-span-7 text-center lg:text-left">
             {/* Eyebrow Badge with Prominent Cuely Logo */}
             <motion.div
-              variants={heroBadgeVariant}
+              variants={prefersReducedMotion ? {} : heroBadgeVariant}
               initial="hidden"
               animate="visible"
               className="inline-flex items-center gap-3 rounded-full border border-blue-500/40 bg-blue-500/15 px-4 py-2 text-xs font-bold text-blue-300 backdrop-blur-md mb-6 shadow-md shadow-blue-500/20"
@@ -62,7 +75,7 @@ export function HeroSection() {
 
             {/* Main Headline */}
             <motion.h1
-              initial={{ opacity: 0, y: 20 }}
+              initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[var(--text-primary)] leading-[1.1]"
@@ -76,7 +89,7 @@ export function HeroSection() {
 
             {/* Subheadline */}
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="mt-6 text-lg sm:text-xl text-[var(--text-secondary)] leading-relaxed max-w-2xl mx-auto lg:mx-0 font-normal"
@@ -86,7 +99,7 @@ export function HeroSection() {
 
             {/* Dual Magnetic CTAs */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
               className="mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4"
@@ -107,7 +120,7 @@ export function HeroSection() {
 
             {/* Social Proof */}
             <motion.div
-              initial={{ opacity: 0 }}
+              initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.4 }}
               className="mt-10 flex items-center justify-center lg:justify-start gap-4 pt-6 border-t border-[var(--border-color)]"
@@ -137,14 +150,16 @@ export function HeroSection() {
           </div>
 
           {/* Right Column: Floating 3D Tilt Device Mockup */}
-          <div className="lg:col-span-5 relative flex justify-center">
+          <div className="lg:col-span-5 relative flex justify-center mt-12 lg:mt-0">
             {/* Ambient Background Glow behind device */}
-            <motion.div
-              animate={glowPulseAnimation}
-              className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-blue-600/30 via-indigo-600/30 to-cyan-500/20 blur-2xl -z-10"
-            />
+            {!prefersReducedMotion && (
+              <motion.div
+                animate={glowPulseAnimation}
+                className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-blue-600/30 via-indigo-600/30 to-cyan-500/20 blur-2xl -z-10"
+              />
+            )}
 
-            <motion.div animate={floatAnimation} className="w-full max-w-sm sm:max-w-md">
+            <motion.div animate={prefersReducedMotion ? {} : floatAnimation} className="w-full max-w-sm sm:max-w-md">
               <TiltCard maxTilt={12}>
                 <div className="relative rounded-3xl border border-white/15 bg-gradient-to-b from-[#151c2e]/90 to-[#0b101d]/90 p-6 shadow-2xl backdrop-blur-2xl">
                   {/* Phone Notch/Header bar with Prominent Cuely Logo */}
@@ -154,32 +169,36 @@ export function HeroSection() {
                       <span className="text-base font-black text-white tracking-tight">Cuely OS</span>
                     </div>
                     <div className="flex items-center gap-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 px-3 py-1 text-[11px] text-blue-300 font-mono">
-                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                      <span className={`h-2 w-2 rounded-full bg-emerald-400 ${prefersReducedMotion ? '' : 'animate-ping'}`} />
                       LIVE TICKET
                     </div>
                   </div>
 
                   {/* Ticket Content */}
-                  <div className="relative rounded-2xl border border-white/10 bg-gradient-to-b from-white/5 to-white/0 p-6 text-center shadow-inner">
-                    <div className="text-xs font-semibold uppercase tracking-wider text-blue-400 flex items-center justify-center gap-1.5">
+                  <div className={`relative rounded-2xl border ${status === 'CALLED' ? 'border-emerald-500/50 shadow-[0_0_30px_rgba(52,211,153,0.3)] bg-gradient-to-b from-emerald-500/10 to-transparent' : 'border-white/10 bg-gradient-to-b from-white/5 to-white/0'} p-6 text-center shadow-inner transition-all duration-500`}>
+                    <div className="text-xs font-semibold uppercase tracking-wider text-blue-400 flex items-center justify-center gap-1.5 mb-2">
                       <CuelyLogo size="xs" showGlow={false} />
                       <span>General Consultation</span>
                     </div>
-                    <div className="my-4">
-                      <span className="text-5xl font-black tracking-tight text-white font-mono drop-shadow-md">
+                    
+                    <div className="my-6">
+                      <span className="text-6xl font-black tracking-tight text-white font-mono drop-shadow-md">
                         {tokenNum}
                       </span>
                     </div>
 
                     {/* Status Badge */}
-                    <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider mb-6 bg-white/10 text-white border border-white/15 shadow-sm">
+                    <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold uppercase tracking-wider mb-8 border shadow-sm transition-colors duration-500
+                      ${status === 'WAITING' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 
+                        status === 'ALMOST' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
+                        status === 'CALLED' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50' : 
+                        'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
                       <span
                         className={`h-2 w-2 rounded-full ${
-                          status === 'WAITING'
-                            ? 'bg-amber-400 animate-pulse'
-                            : status === 'CALLED'
-                            ? 'bg-blue-400 animate-bounce'
-                            : 'bg-emerald-400'
+                          status === 'WAITING' ? 'bg-amber-400' :
+                          status === 'ALMOST' ? 'bg-orange-400 animate-pulse' :
+                          status === 'CALLED' ? 'bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]' :
+                          'bg-blue-400'
                         }`}
                       />
                       <span>STATUS: {status}</span>
@@ -188,31 +207,36 @@ export function HeroSection() {
                     {/* Queue Stats Cards */}
                     <div className="grid grid-cols-2 gap-3 pt-4 border-t border-white/10 text-left">
                       <div className="rounded-xl bg-white/5 p-3 border border-white/5">
-                        <div className="flex items-center gap-1.5 text-xs text-white/60">
+                        <div className="flex items-center gap-1.5 text-xs text-white/60 mb-1">
                           <Users className="h-3.5 w-3.5 text-blue-400" />
                           <span>Ahead of you</span>
                         </div>
-                        <p className="mt-1 text-lg font-bold text-white font-mono">{position} People</p>
+                        <p className="mt-1 text-2xl font-bold text-white font-mono">{position} <span className="text-sm font-sans font-normal text-white/50">people</span></p>
                       </div>
                       <div className="rounded-xl bg-white/5 p-3 border border-white/5">
-                        <div className="flex items-center gap-1.5 text-xs text-white/60">
+                        <div className="flex items-center gap-1.5 text-xs text-white/60 mb-1">
                           <Clock className="h-3.5 w-3.5 text-cyan-400" />
                           <span>Est. Wait</span>
                         </div>
-                        <p className="mt-1 text-lg font-bold text-white font-mono">
-                          {position * 4} mins
+                        <p className="mt-1 text-2xl font-bold text-white font-mono">
+                          {position * 4} <span className="text-sm font-sans font-normal text-white/50">mins</span>
                         </p>
                       </div>
                     </div>
                   </div>
 
                   {/* Action Notification Simulation */}
-                  <div className="mt-4 flex items-center justify-between rounded-xl bg-blue-500/10 border border-blue-500/20 p-3 text-xs text-blue-300">
+                  <div className={`mt-4 flex items-center justify-between rounded-xl border p-3 text-xs transition-colors duration-500
+                    ${status === 'CALLED' 
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+                      : 'bg-blue-500/10 border-blue-500/20 text-blue-300'}`}>
                     <div className="flex items-center gap-2">
-                      <Smartphone className="h-4 w-4 text-blue-400" />
-                      <span>WhatsApp alert will notify when called</span>
+                      <Smartphone className={`h-4 w-4 ${status === 'CALLED' ? 'text-emerald-400' : 'text-blue-400'}`} />
+                      <span>
+                        {status === 'CALLED' ? 'Please proceed to Counter 3' : 'WhatsApp alert will notify when called'}
+                      </span>
                     </div>
-                    <CheckCircle2 className="h-4 w-4 text-blue-400" />
+                    <CheckCircle2 className={`h-4 w-4 ${status === 'CALLED' ? 'text-emerald-400' : 'text-blue-400'}`} />
                   </div>
                 </div>
               </TiltCard>

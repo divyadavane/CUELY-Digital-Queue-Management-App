@@ -10,7 +10,24 @@ export interface ClientLogo {
   subtext: string;
 }
 
-export interface FeatureItem {
+export interface StatItem {
+  id: string;
+  value: string;
+  suffix?: string;
+  label: string;
+  iconName: string;
+  accentColor: string;
+}
+
+export interface PersonaTab {
+  id: string;
+  label: string;
+  iconName: string;
+  description: string;
+  features: PersonaFeature[];
+}
+
+export interface PersonaFeature {
   id: string;
   title: string;
   description: string;
@@ -49,6 +66,16 @@ export interface FooterColumn {
   links: { label: string; href: string; isExternal?: boolean }[];
 }
 
+// Keep old FeatureItem type for backward compat if any file uses it
+export interface FeatureItem {
+  id: string;
+  title: string;
+  description: string;
+  iconName: string;
+  badge?: string;
+  accentColor?: string;
+}
+
 export const LANDING_CONFIG = {
   brandName: 'Cuely',
   brandTagline: 'Next-Generation Smart Queue & Visitor Management System',
@@ -56,7 +83,7 @@ export const LANDING_CONFIG = {
   heroHeadline: 'Eliminate lines. Delight customers with ',
   heroAccentPhrase: 'unfair speed.',
   heroSubheadline:
-    'Cuely transforms physical wait times into seamless digital experiences. Give your visitors real-time SMS updates, virtual queue tokens, and predictive wait times.',
+    'Cuely transforms physical wait times into seamless digital experiences. Give your visitors real-time SMS updates, virtual queue tokens, and predictive wait times — no app downloads needed.',
   primaryCtaText: 'Start Free Trial',
   primaryCtaHref: '/login',
   secondaryCtaText: 'Explore Demo Kiosk',
@@ -76,6 +103,7 @@ export const LANDING_CONFIG = {
 export const NAV_LINKS: NavLink[] = [
   { label: 'Features', href: '#features' },
   { label: 'How It Works', href: '#how-it-works' },
+  { label: 'Telemedicine', href: '#telemedicine' },
   { label: 'Testimonials', href: '#testimonials' },
   { label: 'FAQ', href: '#faq' },
 ];
@@ -90,78 +118,277 @@ export const CLIENT_LOGOS: ClientLogo[] = [
   { id: '7', name: 'Pulse Care', logoText: 'PULSE', subtext: 'HOSPITALS' },
 ];
 
-export const FEATURES_DATA: FeatureItem[] = [
+// ==========================================
+// Stats Band (between logo marquee & features)
+// ==========================================
+export const STATS_DATA: StatItem[] = [
   {
-    id: '1',
-    title: 'Virtual QR Check-In',
-    description: 'Visitors scan a QR code at the entrance to join the queue instantly without downloading an app.',
-    iconName: 'QrCode',
-    badge: 'Zero Friction',
-    accentColor: '#3b82f6',
+    id: 'stat-1',
+    value: '73',
+    suffix: '%',
+    label: 'Wait Time Reduction',
+    iconName: 'TrendingDown',
+    accentColor: '#22D3EE',
   },
   {
-    id: '2',
-    title: 'Real-Time WhatsApp & SMS Alerts',
-    description: 'Automated notifications notify visitors when their turn is approaching so they can roam freely.',
-    iconName: 'MessageSquare',
-    badge: 'Live Sync',
-    accentColor: '#8b5cf6',
-  },
-  {
-    id: '3',
-    title: 'AI Wait-Time Predictor',
-    description: 'Smart algorithm calculates precise estimated wait times based on historical counter throughput.',
-    iconName: 'Sparkles',
-    badge: 'AI Powered',
-    accentColor: '#06b6d4',
-  },
-  {
-    id: '4',
-    title: 'Multi-Counter Dashboard',
-    description: 'Staff members manage tickets, recall patients/customers, and transfer calls with a single click.',
-    iconName: 'Monitor',
-    badge: 'Staff Ready',
-    accentColor: '#10b981',
-  },
-  {
-    id: '5',
-    title: 'Analytics & Bottleneck Insights',
-    description: 'Detailed reporting on peak hours, service speed, no-shows, and staff performance metrics.',
-    iconName: 'BarChart3',
-    badge: 'Deep Data',
-    accentColor: '#f59e0b',
-  },
-  {
-    id: '6',
-    title: 'Self-Service Kiosk Mode',
-    description: 'Interactive touchscreen interface for walk-in check-ins with thermal ticket printing support.',
+    id: 'stat-2',
+    value: '0',
+    suffix: '',
+    label: 'App Installs Required',
     iconName: 'Smartphone',
-    badge: 'Hardware Sync',
-    accentColor: '#06b6d4',
+    accentColor: '#34D399',
+  },
+  {
+    id: 'stat-3',
+    value: '2400',
+    suffix: '+',
+    label: 'Active Locations',
+    iconName: 'MapPin',
+    accentColor: '#3E7BFA',
+  },
+  {
+    id: 'stat-4',
+    value: '<500',
+    suffix: 'ms',
+    label: 'Real-Time Sync Speed',
+    iconName: 'Zap',
+    accentColor: '#F0B24C',
   },
 ];
 
+// ==========================================
+// Persona-Tabbed Features
+// ==========================================
+export const PERSONA_TABS: PersonaTab[] = [
+  {
+    id: 'patients',
+    label: 'Patients & Customers',
+    iconName: 'Users',
+    description: 'A frictionless experience from check-in to consultation — no downloads, no sign-ups.',
+    features: [
+      {
+        id: 'p1',
+        title: 'QR / Link / WhatsApp Join',
+        description: 'Scan a QR code, tap a link, or join via WhatsApp — no app download needed. Works on any smartphone.',
+        iconName: 'QrCode',
+        badge: 'Zero Friction',
+        accentColor: '#3E7BFA',
+      },
+      {
+        id: 'p2',
+        title: 'Live Queue Tracking',
+        description: 'Watch your position count down in real time. Know exactly when to head to the counter.',
+        iconName: 'Activity',
+        badge: 'Real-Time',
+        accentColor: '#22D3EE',
+      },
+      {
+        id: 'p3',
+        title: 'Green "Called" Alert',
+        description: 'Unmistakable green notification with audio chime when your token is called. Never miss your turn.',
+        iconName: 'BellRing',
+        badge: 'Instant',
+        accentColor: '#34D399',
+      },
+      {
+        id: 'p4',
+        title: 'Patient Portal (OTP Login)',
+        description: 'Secure OTP-based access to view visit history, upcoming appointments, bills, and prescriptions.',
+        iconName: 'ShieldCheck',
+        badge: 'Secure',
+        accentColor: '#8B6BF2',
+      },
+      {
+        id: 'p5',
+        title: 'Video Consultations',
+        description: 'Join video calls directly from the portal. Pre-join device check ensures smooth experience.',
+        iconName: 'Video',
+        badge: 'Telehealth',
+        accentColor: '#8B6BF2',
+      },
+      {
+        id: 'p6',
+        title: 'Multi-Language Support',
+        description: 'Full interface and WhatsApp notifications in English, Hindi, Marathi, and more.',
+        iconName: 'Languages',
+        accentColor: '#F0B24C',
+      },
+    ],
+  },
+  {
+    id: 'doctors',
+    label: 'Doctors & Staff',
+    iconName: 'Stethoscope',
+    description: 'Keyboard-driven workflows, video consult panels, and daily metrics — built for clinical speed.',
+    features: [
+      {
+        id: 'd1',
+        title: 'Keyboard Shortcuts',
+        description: 'C = Call Next, T = Transfer, A = Assistance request. Operate the queue without touching the mouse.',
+        iconName: 'Keyboard',
+        badge: 'Power User',
+        accentColor: '#3E7BFA',
+      },
+      {
+        id: 'd2',
+        title: 'Video Consult Panel',
+        description: 'In-call tooling with SOAP notes, e-prescriptions, and patient history side panel.',
+        iconName: 'MonitorPlay',
+        badge: 'Telehealth',
+        accentColor: '#8B6BF2',
+      },
+      {
+        id: 'd3',
+        title: 'Schedule & Availability',
+        description: 'Set daily availability, manage appointment slots, and block break times from the dashboard.',
+        iconName: 'CalendarClock',
+        badge: 'Smart',
+        accentColor: '#22D3EE',
+      },
+      {
+        id: 'd4',
+        title: 'E-Prescriptions',
+        description: 'Generate digital prescriptions during or after consultations. Auto-linked to patient records.',
+        iconName: 'FileText',
+        badge: 'Digital Rx',
+        accentColor: '#34D399',
+      },
+      {
+        id: 'd5',
+        title: 'Daily Summary Metrics',
+        description: 'Patients seen, average consult time, no-show rate — all at a glance at end of day.',
+        iconName: 'BarChart3',
+        badge: 'Analytics',
+        accentColor: '#F0B24C',
+      },
+    ],
+  },
+  {
+    id: 'business',
+    label: 'Business & Admin',
+    iconName: 'Building2',
+    description: 'Multi-queue control center with role-based access, analytics, and audit trail for operations leaders.',
+    features: [
+      {
+        id: 'b1',
+        title: 'Multi-Queue Control Center',
+        description: 'Manage multiple departments, counters, and service lines from a single unified dashboard.',
+        iconName: 'LayoutDashboard',
+        badge: 'Central Hub',
+        accentColor: '#3E7BFA',
+      },
+      {
+        id: 'b2',
+        title: 'Priority & Urgency Analytics',
+        description: 'AI-powered urgency scoring and priority escalation. Identify bottlenecks before they happen.',
+        iconName: 'Sparkles',
+        badge: 'AI Powered',
+        accentColor: '#8B6BF2',
+      },
+      {
+        id: 'b3',
+        title: 'Role-Based Access Control',
+        description: 'Admin, Doctor, Staff, Receptionist — each role sees exactly what they need, nothing more.',
+        iconName: 'Lock',
+        badge: 'Secure',
+        accentColor: '#34D399',
+      },
+      {
+        id: 'b4',
+        title: 'Reports & Audit Trail',
+        description: 'Detailed logs of every ticket action with exportable reports for compliance and performance reviews.',
+        iconName: 'ClipboardList',
+        badge: 'Compliance',
+        accentColor: '#F0B24C',
+      },
+      {
+        id: 'b5',
+        title: 'Razorpay Billing Integration',
+        description: 'Accept payments for consultations, gated room access, and billing — all via Razorpay.',
+        iconName: 'CreditCard',
+        badge: 'Payments',
+        accentColor: '#22D3EE',
+      },
+      {
+        id: 'b6',
+        title: 'Self-Service Kiosk Mode',
+        description: 'Touchscreen kiosk interface for walk-in check-ins with thermal ticket printing support.',
+        iconName: 'Tablet',
+        accentColor: '#3E7BFA',
+      },
+    ],
+  },
+];
+
+// Keep legacy FEATURES_DATA for backward compat (some imports might reference it)
+export const FEATURES_DATA: FeatureItem[] = PERSONA_TABS[0].features.map(f => ({
+  id: f.id,
+  title: f.title,
+  description: f.description,
+  iconName: f.iconName,
+  badge: f.badge,
+  accentColor: f.accentColor,
+}));
+
+// ==========================================
+// How It Works (4 steps now)
+// ==========================================
 export const HOW_IT_WORKS_STEPS: StepItem[] = [
   {
     number: '01',
-    title: 'Check-In Remotely or On-Site',
-    description: 'Customers scan a QR code on their smartphone or tap the self-service kiosk to claim their ticket number.',
+    title: 'Join the Queue Instantly',
+    description: 'Customers scan a QR code, tap a link, or use the self-service kiosk to claim their ticket — zero app installs.',
     details: ['No app installation needed', 'Select specific department or service', 'SMS / WhatsApp link issued instantly'],
   },
   {
     number: '02',
-    title: 'Relax & Track Live Queue Status',
-    description: 'Visitors monitor their position live from their phone, receiving timely updates as their number approaches.',
-    details: ['Live position countdown', 'Dynamic estimated wait time', 'Freedom to wait nearby'],
+    title: 'Track Your Position Live',
+    description: 'Watch your position count down in real time from your phone. Estimated wait updates dynamically.',
+    details: ['Live position countdown', 'Dynamic estimated wait time', 'Freedom to wait anywhere nearby'],
   },
   {
     number: '03',
-    title: 'Step Up to the Called Counter',
-    description: 'When called, staff chime the ticket number on overhead screens and push an instant alert directly to the visitor.',
-    details: ['Audio & visual display ping', 'Direct counter direction', '1-click ticket resolution'],
+    title: 'Get Notified Instantly',
+    description: 'Receive a WhatsApp alert and audio chime when your turn is approaching or when you\'re called.',
+    details: ['WhatsApp + Push notifications', '"Almost there" pre-alert', 'Unmistakable green "Called" state'],
+  },
+  {
+    number: '04',
+    title: 'Get Served & Rate',
+    description: 'Walk up to the assigned counter, get served, and rate your experience — all digitally tracked.',
+    details: ['Directed to exact counter/room', 'Visit logged for audit trail', 'Post-visit rating & feedback'],
   },
 ];
 
+// ==========================================
+// Telemedicine Feature Highlights
+// ==========================================
+export const TELEMEDICINE_HIGHLIGHTS = [
+  {
+    title: 'Peer-to-Peer WebRTC',
+    description: 'Direct browser-to-browser video calls. No Twilio, no LiveKit, no third-party SFU dependency.',
+    iconName: 'Radio',
+  },
+  {
+    title: 'Pre-Join Device Check',
+    description: 'Camera, mic, and speaker test before entering the call. No mid-call surprises.',
+    iconName: 'MonitorCheck',
+  },
+  {
+    title: 'In-Call Clinical Tools',
+    description: 'SOAP notes, e-prescriptions, and patient history panel available during the video call.',
+    iconName: 'ClipboardPlus',
+  },
+  {
+    title: 'Payment-Gated Access',
+    description: 'Patients pay via Razorpay before joining. Room access is granted only after confirmed payment.',
+    iconName: 'CreditCard',
+  },
+];
+
+// ==========================================
+// Testimonials
+// ==========================================
 export const TESTIMONIALS_DATA: TestimonialItem[] = [
   {
     id: '1',
@@ -195,6 +422,9 @@ export const TESTIMONIALS_DATA: TestimonialItem[] = [
   },
 ];
 
+// ==========================================
+// FAQ — expanded with new items
+// ==========================================
 export const FAQ_DATA: FaqItem[] = [
   {
     id: '1',
@@ -216,25 +446,46 @@ export const FAQ_DATA: FaqItem[] = [
   },
   {
     id: '4',
-    question: 'How hard is it to integrate with our current database/CRM?',
-    answer: 'Cuely provides clean REST and GraphQL APIs along with Webhooks. You can easily sync queue activity, patient records, or customer IDs in real-time.',
-    category: 'Integrations',
+    question: 'Can I manage multiple queues or departments simultaneously?',
+    answer: 'Yes. Cuely supports unlimited queues per location. Each queue can have its own service counters, staff assignments, and notification templates. The admin dashboard provides a unified view across all active queues.',
+    category: 'Operations',
   },
   {
     id: '5',
+    question: 'How is patient data isolated between different clinics?',
+    answer: 'Cuely uses Supabase Row-Level Security (RLS) policies to ensure strict data isolation. Each business can only access their own patients, queues, and analytics. Data never leaks between tenants.',
+    category: 'Security',
+  },
+  {
+    id: '6',
+    question: 'Does the video consultation require patients to install Zoom or another app?',
+    answer: 'No. Cuely uses peer-to-peer WebRTC built directly into the browser. Patients join the video call from any modern browser with a single click — no downloads, no accounts, no plugins.',
+    category: 'Telemedicine',
+  },
+  {
+    id: '7',
+    question: 'What languages are supported?',
+    answer: 'Cuely supports English, Hindi, and Marathi out of the box — including translated WhatsApp/SMS notification templates. More languages can be added via the i18n configuration.',
+    category: 'Localization',
+  },
+  {
+    id: '8',
     question: 'Can we try Cuely before committing to a plan?',
     answer: 'Yes, we offer a 14-day free trial with full access to all features, including unlimited tickets, SMS alerts, and staff accounts.',
     category: 'Billing',
   },
 ];
 
+// ==========================================
+// Footer Columns (Privacy link updated)
+// ==========================================
 export const FOOTER_COLUMNS: FooterColumn[] = [
   {
     title: 'Product',
     links: [
       { label: 'Features', href: '#features' },
       { label: 'Kiosk Mode', href: '/kiosk' },
-      { label: 'Customer Portal', href: '/patient' },
+      { label: 'Patient Portal', href: '/portal/login' },
       { label: 'Queue Management', href: '/queue' },
       { label: 'Staff Dashboard', href: '/login' },
     ],
@@ -251,7 +502,7 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
   {
     title: 'Legal & Privacy',
     links: [
-      { label: 'Privacy Policy', href: '#' },
+      { label: 'Privacy Policy', href: '/privacy' },
       { label: 'Terms of Service', href: '#' },
       { label: 'Security & HIPAA', href: '#' },
       { label: 'GDPR Compliance', href: '#' },
