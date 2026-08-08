@@ -97,7 +97,7 @@ export function TelemedicineSection() {
 
           {/* Right — Video Call UI Mockup */}
           <RevealOnScroll>
-            <CardContainer className="inter-var">
+            <CardContainer className="inter-var w-full" containerClassName="w-full">
               <CardBody className="relative group/card rounded-3xl border border-white/15 bg-gradient-to-b from-[#151c2e]/95 to-[#0b101d]/95 p-5 shadow-2xl backdrop-blur-2xl hover:shadow-2xl hover:shadow-violet-500/[0.2] transition-all duration-300 w-full h-auto">
                 
                 {/* Ambient glow behind mockup */}
