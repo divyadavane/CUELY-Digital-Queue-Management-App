@@ -29,6 +29,7 @@ import {
   ArrowRightLeft,
   Star,
   Command,
+  User,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -62,6 +63,7 @@ export function DoctorQueueView({ queues }: DoctorQueueViewProps) {
     }));
   }, [queues]);
   const [doctors, setDoctors] = useState<DoctorInfo[]>(doctorsInitial);
+  const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
 
   useEffect(() => {
     setDoctors(doctorsInitial);
@@ -282,6 +284,19 @@ export function DoctorQueueView({ queues }: DoctorQueueViewProps) {
             {activeDoctor.isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
             {activeDoctor.isPaused ? "Resume Queue" : "Doctor Break / Pause"}
           </button>
+
+          {/* Patient Updates Toggle Button */}
+          <button
+            onClick={() => setIsUpdatesOpen(!isUpdatesOpen)}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-extrabold shadow-lg transition-all border ${
+              isUpdatesOpen
+                ? "bg-blue-500/20 border-blue-500 text-blue-400 hover:bg-blue-500/30"
+                : "bg-slate-800 border-white/10 text-slate-300 hover:bg-slate-700"
+            }`}
+          >
+            <User className="w-4 h-4" />
+            Patient Updates
+          </button>
         </div>
       </div>
 
@@ -301,6 +316,14 @@ export function DoctorQueueView({ queues }: DoctorQueueViewProps) {
             Resume Now
           </button>
         </div>
+      )}
+
+      {/* Patient Messages / Updates */}
+      {isUpdatesOpen && activeDoctor && (
+        <MessagesPanel
+          queueId={activeDoctor.queueId}
+          doctorName={activeDoctor.name}
+        />
       )}
 
       {/* Doctor Rating Banner */}
@@ -449,13 +472,7 @@ export function DoctorQueueView({ queues }: DoctorQueueViewProps) {
         <VideoConsultationsPanel queueId={activeDoctor.queueId} />
       )}
 
-      {/* Patient Messages */}
-      {activeDoctor && (
-        <MessagesPanel
-          queueId={activeDoctor.queueId}
-          doctorName={activeDoctor.name}
-        />
-      )}
+
 
       {/* Schedule & Availability */}
       {activeDoctor && (
