@@ -94,15 +94,31 @@ export function TelemedicineSection() {
             </div>
           </RevealOnScroll>
 
+import { EvervaultCard, Icon } from '@/components/ui/evervault-card';
+
+// ... Inside TelemedicineSection component ...
+
           {/* Right — Video Call UI Mockup */}
           <RevealOnScroll>
             <div className="relative">
               {/* Ambient glow behind mockup */}
               <div className="absolute -inset-6 rounded-3xl bg-gradient-to-tr from-violet-600/20 via-purple-600/15 to-fuchsia-500/10 blur-2xl -z-10" />
 
-              <div className="rounded-3xl border border-white/15 bg-gradient-to-b from-[#151c2e]/95 to-[#0b101d]/95 p-5 shadow-2xl backdrop-blur-2xl">
+              <div className="relative rounded-3xl border border-white/15 bg-gradient-to-b from-[#151c2e]/95 to-[#0b101d]/95 p-5 shadow-2xl backdrop-blur-2xl">
+                
+                {/* Corner Icons for the high-tech look */}
+                <Icon className="absolute h-6 w-6 -top-3 -left-3 text-white/30 z-20" />
+                <Icon className="absolute h-6 w-6 -bottom-3 -left-3 text-white/30 z-20" />
+                <Icon className="absolute h-6 w-6 -top-3 -right-3 text-white/30 z-20" />
+                <Icon className="absolute h-6 w-6 -bottom-3 -right-3 text-white/30 z-20" />
+
+                {/* Evervault Hover Effect Background */}
+                <div className="absolute inset-0 z-0 overflow-hidden rounded-3xl opacity-60">
+                  <EvervaultCard />
+                </div>
+
                 {/* Video call header */}
-                <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+                <div className="relative z-10 flex items-center justify-between border-b border-white/10 pb-3 mb-4">
                   <div className="flex items-center gap-2.5">
                     <CuelyLogo size="xs" showGlow />
                     <span className="text-sm font-bold text-white">Cuely Meet</span>
@@ -114,7 +130,7 @@ export function TelemedicineSection() {
                 </div>
 
                 {/* Video area (simulated) */}
-                <div className="relative rounded-2xl bg-gradient-to-br from-violet-900/30 via-[#1a1030] to-[#0d0620] border border-white/5 aspect-video flex items-center justify-center overflow-hidden">
+                <div className="relative z-10 rounded-2xl bg-gradient-to-br from-violet-900/30 via-[#1a1030] to-[#0d0620] border border-white/5 aspect-video flex items-center justify-center overflow-hidden">
                   {/* Simulated doctor avatar */}
                   <div className="flex flex-col items-center gap-3">
                     <div className="h-20 w-20 rounded-full bg-gradient-to-tr from-violet-500 to-fuchsia-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-violet-500/25">
@@ -141,26 +157,26 @@ export function TelemedicineSection() {
                 </div>
 
                 {/* Call controls */}
-                <div className="flex items-center justify-center gap-3 mt-4 pt-3 border-t border-white/5">
-                  <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 border border-white/10 text-white hover:bg-white/15 transition-colors">
+                <div className="relative z-10 flex items-center justify-center gap-3 mt-4 pt-3 border-t border-white/5">
+                  <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 border border-white/10 text-white hover:bg-white/15 transition-colors pointer-events-auto">
                     <Mic className="h-4 w-4" />
                   </button>
-                  <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 border border-white/10 text-white hover:bg-white/15 transition-colors">
+                  <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 border border-white/10 text-white hover:bg-white/15 transition-colors pointer-events-auto">
                     <Video className="h-4 w-4" />
                   </button>
-                  <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 border border-white/10 text-white hover:bg-white/15 transition-colors">
+                  <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 border border-white/10 text-white hover:bg-white/15 transition-colors pointer-events-auto">
                     <MessageSquare className="h-4 w-4" />
                   </button>
-                  <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 border border-white/10 text-white hover:bg-white/15 transition-colors">
+                  <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 border border-white/10 text-white hover:bg-white/15 transition-colors pointer-events-auto">
                     <FileText className="h-4 w-4" />
                   </button>
-                  <button className="flex h-11 w-11 items-center justify-center rounded-full bg-red-500/80 text-white hover:bg-red-500 transition-colors shadow-lg shadow-red-500/25">
+                  <button className="flex h-11 w-11 items-center justify-center rounded-full bg-red-500/80 text-white hover:bg-red-500 transition-colors shadow-lg shadow-red-500/25 pointer-events-auto">
                     <PhoneOff className="h-4 w-4" />
                   </button>
                 </div>
 
                 {/* In-call mini ticket */}
-                <div className="mt-4 rounded-xl border border-violet-500/20 bg-violet-500/5 p-3 flex items-center justify-between">
+                <div className="relative z-10 mt-4 rounded-xl border border-violet-500/20 bg-violet-500/5 p-3 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/15 border border-violet-500/20">
                       <CheckCircle2 className="h-4 w-4 text-violet-400" />
