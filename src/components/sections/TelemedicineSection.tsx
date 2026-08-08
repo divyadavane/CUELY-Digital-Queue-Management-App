@@ -1,5 +1,7 @@
 'use client';
 
+import { EvervaultCard, Icon } from '@/components/ui/evervault-card';
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -93,10 +95,6 @@ export function TelemedicineSection() {
               })}
             </div>
           </RevealOnScroll>
-
-import { EvervaultCard, Icon } from '@/components/ui/evervault-card';
-
-// ... Inside TelemedicineSection component ...
 
           {/* Right — Video Call UI Mockup */}
           <RevealOnScroll>
