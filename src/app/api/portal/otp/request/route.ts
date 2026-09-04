@@ -26,14 +26,28 @@ export async function POST(req: NextRequest) {
 
     const result = data as { code?: string; expires_at?: string };
 
-    // Deliver the code to the patient's phone over WhatsApp. The code itself is
-    // never returned to the client.
-    const delivery = result.code ? await sendOtpWhatsApp(phone, result.code) : undefined;
+    if (result.code) {
+      console.log(`\n========================================`);
+      console.log(`🔐 [CUELY PATIENT PORTAL OTP]: ${result.code}`);
+      console.log(`📱 Phone: ${phone}`);
+      console.log(`========================================\n`);
+    }
+
+    // Deliver the code to the patient's phone over WhatsApp (if configured)
+    let delivery;
+    try {
+      delivery = result.code ? await sendOtpWhatsApp(phone, result.code) : undefined;
+    } catch (deliveryErr) {
+      console.warn("[WhatsApp Delivery Warning]:", deliveryErr);
+    }
+
+    const isDev = process.env.NODE_ENV !== "production";
 
     return NextResponse.json({
       success: true,
       expiresAt: result.expires_at,
       delivery,
+      ...(isDev && result.code ? { devCode: result.code } : {}),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

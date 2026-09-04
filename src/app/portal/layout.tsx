@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`${manrope.variable} font-manrope min-h-screen bg-[#070b16] text-white`}>
+    <div className={`${manrope.variable} font-manrope min-h-screen bg-background text-foreground transition-colors duration-300`}>
       {children}
     </div>
   );

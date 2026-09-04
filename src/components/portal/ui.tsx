@@ -12,7 +12,7 @@ export function PortalCard({
   className?: string;
 }) {
   return (
-    <div className={`bg-white/[0.04] border border-white/10 rounded-3xl backdrop-blur-xl shadow-lg shadow-black/20 ${className}`}>
+    <div className={`bg-card border border-border rounded-3xl backdrop-blur-xl shadow-lg transition-colors duration-300 ${className}`}>
       {children}
     </div>
   );
@@ -21,16 +21,16 @@ export function PortalCard({
 export function SectionTitle({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="mb-5">
-      <h2 className="text-lg font-extrabold text-white">{title}</h2>
-      {subtitle && <p className="text-xs text-slate-400 font-medium mt-0.5">{subtitle}</p>}
+      <h2 className="text-lg font-extrabold text-foreground">{title}</h2>
+      {subtitle && <p className="text-xs text-muted-foreground font-medium mt-0.5">{subtitle}</p>}
     </div>
   );
 }
 
 export function LoadingBlock({ label = "Loading..." }: { label?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-      <Loader2 className="w-8 h-8 animate-spin text-blue-400 mb-3" />
+    <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+      <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-3" />
       <p className="text-xs font-semibold">{label}</p>
     </div>
   );
@@ -49,11 +49,11 @@ export function EmptyState({
 }) {
   return (
     <PortalCard className="p-8 text-center flex flex-col items-center">
-      <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-4">
+      <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 mb-4">
         {icon}
       </div>
-      <h3 className="font-bold text-white text-base">{title}</h3>
-      {subtitle && <p className="text-xs text-slate-400 mt-1.5 max-w-xs leading-relaxed">{subtitle}</p>}
+      <h3 className="font-bold text-foreground text-base">{title}</h3>
+      {subtitle && <p className="text-xs text-muted-foreground mt-1.5 max-w-xs leading-relaxed">{subtitle}</p>}
       {action && <div className="mt-5 w-full max-w-xs">{action}</div>}
     </PortalCard>
   );

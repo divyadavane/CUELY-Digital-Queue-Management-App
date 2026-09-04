@@ -74,30 +74,31 @@ export function PatientPortal() {
   const firstName = (profile.name || t("common.patient")).trim().split(" ")[0];
 
   return (
-    <div className="min-h-screen bg-[#070b16] text-white font-manrope">
+    <div className="min-h-screen bg-background text-foreground font-manrope transition-colors duration-300">
       {/* Ambient glow */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-32 -left-24 w-96 h-96 rounded-full bg-blue-600/20 blur-3xl" />
-        <div className="absolute top-1/3 -right-32 w-96 h-96 rounded-full bg-purple-600/15 blur-3xl" />
+        <div className="absolute -top-32 -left-24 w-96 h-96 rounded-full bg-blue-600/15 blur-3xl" />
+        <div className="absolute top-1/3 -right-32 w-96 h-96 rounded-full bg-purple-600/10 blur-3xl" />
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[#070b16]/85 backdrop-blur-xl border-b border-white/10 px-4 py-3.5">
+      <header className="sticky top-0 z-40 bg-card/85 backdrop-blur-xl border-b border-border px-4 py-3.5 transition-colors duration-300">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <CuelyLogo size="sm" showGlow />
             <div>
-              <p className="text-sm font-extrabold leading-none">{t("portal.title")}</p>
-              <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+              <p className="text-sm font-extrabold leading-none text-foreground">{t("portal.title")}</p>
+              <p className="text-[10px] text-muted-foreground font-medium mt-0.5">
                 {t("portal.welcome", { name: firstName })}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle className="border border-border bg-card text-foreground" />
             <LanguageSwitcher align="right" size="sm" />
             <button
               onClick={() => router.push("/portal/login")}
-              className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 transition-all"
+              className="p-2.5 rounded-xl bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
               title={t("portal.signOut")}
             >
               <LogOut className="w-4 h-4" />
