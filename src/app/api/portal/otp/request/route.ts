@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       console.log(`========================================\n`);
     }
 
-    // Deliver the code to the patient's phone over WhatsApp (if configured)
+    // Deliver the code to the patient's phone over WhatsApp
     let delivery;
     try {
       delivery = result.code ? await sendOtpWhatsApp(phone, result.code) : undefined;
@@ -41,13 +41,10 @@ export async function POST(req: NextRequest) {
       console.warn("[WhatsApp Delivery Warning]:", deliveryErr);
     }
 
-    const isDev = process.env.NODE_ENV !== "production";
-
     return NextResponse.json({
       success: true,
       expiresAt: result.expires_at,
       delivery,
-      ...(isDev && result.code ? { devCode: result.code } : {}),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

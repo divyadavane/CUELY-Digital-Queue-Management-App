@@ -32,8 +32,6 @@ export function PortalLogin() {
   const [resendIn, setResendIn] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const [devCode, setDevCode] = useState<string | null>(null);
-
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -62,13 +60,10 @@ export function PortalLogin() {
     setError(null);
     setLoading(true);
     try {
-      const res = await portalApi<RequestOtpResponse & { devCode?: string }>("/api/portal/otp/request", {
+      const res = await portalApi<RequestOtpResponse>("/api/portal/otp/request", {
         method: "POST",
         body: JSON.stringify({ phone, preferred_language: i18n.language }),
       });
-      if (res.devCode) {
-        setDevCode(res.devCode);
-      }
       if (res.delivery) {
         setDeliveryMsg(
           res.delivery.success
@@ -125,12 +120,6 @@ export function PortalLogin() {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       document.getElementById(`otp-${index - 1}`)?.focus();
     }
-  };
-
-  const fillDevCode = () => {
-    if (!devCode) return;
-    const digits = devCode.split("");
-    setOtp(digits.slice(0, 6));
   };
 
   const verifyOtp = async () => {
@@ -235,22 +224,6 @@ export function PortalLogin() {
               {error && (
                 <div className="mb-5 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs font-semibold">
                   {error}
-                </div>
-              )}
-
-              {devCode && (
-                <div className="mb-4 p-3 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-between gap-2">
-                  <div className="text-xs">
-                    <span className="text-blue-500 font-bold block">Dev Mode OTP:</span>
-                    <span className="font-mono text-sm font-black text-foreground">{devCode}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={fillDevCode}
-                    className="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-sm"
-                  >
-                    Auto Fill
-                  </button>
                 </div>
               )}
 
