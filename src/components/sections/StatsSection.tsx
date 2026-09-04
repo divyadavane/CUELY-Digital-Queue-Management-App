@@ -77,7 +77,7 @@ function AnimatedCounter({ value, suffix }: { value: string; suffix?: string }) 
   }, [value]);
 
   return (
-    <span ref={ref} className="font-mono font-black text-3xl sm:text-4xl tracking-tight text-white">
+    <span ref={ref} className="font-mono font-black text-3xl sm:text-4xl tracking-tight text-[var(--text-primary)]">
       {display}
       {suffix && <span className="text-2xl sm:text-3xl">{suffix}</span>}
     </span>
@@ -98,7 +98,7 @@ export function StatsSection() {
               return (
                 <div
                   key={stat.id}
-                  className="group relative rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-6 sm:p-8 text-center hover:border-white/20 hover:bg-white/[0.06] transition-all duration-300"
+                  className="group relative rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] backdrop-blur-sm p-6 sm:p-8 text-center hover:border-blue-500/30 transition-all duration-300 shadow-sm"
                 >
                   {/* Accent glow line at top */}
                   <div
@@ -107,7 +107,7 @@ export function StatsSection() {
                   />
 
                   <div
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 mb-4"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border-color)] mb-4"
                     style={{ background: `radial-gradient(circle, ${stat.accentColor}25, transparent)` }}
                   >
                     <IconComponent className="h-5 w-5" style={{ color: stat.accentColor }} />
@@ -117,7 +117,7 @@ export function StatsSection() {
                     <AnimatedCounter value={stat.value} suffix={stat.suffix} />
                   </div>
 
-                  <p className="text-xs sm:text-sm font-medium text-white/50 uppercase tracking-wider">
+                  <p className="text-xs sm:text-sm font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                     {stat.label}
                   </p>
                 </div>

@@ -43,7 +43,7 @@ export function FeatureGridSection() {
             <CuelyLogo size="xs" showGlow />
             <span>Built for Every Role</span>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-[var(--text-primary)] tracking-tight">
             Features That <GradientText>Actually Matter</GradientText>
           </h2>
           <p className="mt-4 text-lg text-[var(--text-secondary)]">
@@ -63,8 +63,8 @@ export function FeatureGridSection() {
                 className={`
                   relative flex items-center gap-2.5 px-5 py-3 rounded-xl text-sm font-bold transition-all duration-300 cursor-pointer w-full sm:w-auto justify-center
                   ${isActive
-                    ? 'text-white bg-white/10 border border-white/20 shadow-lg shadow-blue-500/10'
-                    : 'text-white/50 bg-transparent border border-transparent hover:text-white/80 hover:bg-white/5'
+                    ? 'text-[var(--text-primary)] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-lg shadow-blue-500/10'
+                    : 'text-[var(--text-muted)] bg-transparent border border-transparent hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)]'
                   }
                 `}
                 data-cursor="hover"
@@ -92,7 +92,7 @@ export function FeatureGridSection() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
-            className="text-center text-sm text-white/40 mb-10 max-w-xl mx-auto"
+            className="text-center text-sm text-[var(--text-secondary)] mb-10 max-w-xl mx-auto"
           >
             {activePersona.description}
           </motion.p>
@@ -120,9 +120,9 @@ export function FeatureGridSection() {
                     <div>
                       <div className="flex items-center justify-between mb-6">
                         <div
-                          className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 shadow-lg"
+                          className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--border-color)] shadow-lg"
                           style={{
-                            background: `radial-gradient(circle at center, ${feature.accentColor || '#3b82f6'}30, rgba(255,255,255,0.05))`,
+                            background: `radial-gradient(circle at center, ${feature.accentColor || '#3b82f6'}30, var(--bg-card))`,
                           }}
                         >
                           <IconComponent
@@ -144,7 +144,7 @@ export function FeatureGridSection() {
                         )}
                       </div>
 
-                      <h3 className="text-xl font-bold text-white tracking-tight group-hover:text-blue-300 transition-colors">
+                      <h3 className="text-xl font-bold text-[var(--text-primary)] tracking-tight group-hover:text-blue-500 transition-colors">
                         {feature.title}
                       </h3>
                       <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">
@@ -152,7 +152,7 @@ export function FeatureGridSection() {
                       </p>
                     </div>
 
-                    <div className="mt-6 pt-4 border-t border-white/5 flex items-center text-xs font-semibold text-blue-400 group-hover:text-blue-300 transition-colors">
+                    <div className="mt-6 pt-4 border-t border-[var(--border-color)] flex items-center text-xs font-semibold text-blue-500 group-hover:text-blue-600 transition-colors">
                       <span>Learn more</span>
                       <span className="ml-1 transition-transform group-hover:translate-x-1">→</span>
                     </div>

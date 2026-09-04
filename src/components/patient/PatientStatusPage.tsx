@@ -86,14 +86,14 @@ export function PatientStatusPage({ initialTicket, clinicName = "Sunrise Clinic"
   const isServed = ticket.status === "served";
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-start p-4 md:p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col items-center justify-start p-4 md:p-6 relative overflow-hidden transition-colors duration-300">
       {/* Header */}
-      <header className="w-full max-w-md mx-auto flex items-center justify-between py-4 border-b border-white/10 mb-6">
+      <header className="w-full max-w-md mx-auto flex items-center justify-between py-4 border-b border-[var(--border-color)] mb-6">
         <div className="flex items-center gap-2.5">
           <CuelyLogo size="sm" showGlow />
           <div>
-            <h1 className="font-bold text-base font-sans text-white">{clinicName}</h1>
-            <p className="text-[11px] text-slate-400 font-medium">{t("status.livePortal")}</p>
+            <h1 className="font-bold text-base font-sans text-[var(--text-primary)]">{clinicName}</h1>
+            <p className="text-[11px] text-[var(--text-muted)] font-medium">{t("status.livePortal")}</p>
           </div>
         </div>
 
@@ -101,17 +101,17 @@ export function PatientStatusPage({ initialTicket, clinicName = "Sunrise Clinic"
           <LanguageSwitcher align="right" />
           <a
             href="/portal/login"
-            className="p-2 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:text-white transition-all"
+            className="p-2 rounded-full bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all"
             title={t("status.openPortal")}
           >
-            <LayoutDashboard className="w-4 h-4 text-blue-400" />
+            <LayoutDashboard className="w-4 h-4 text-blue-500" />
           </a>
           <button
             onClick={() => setIsAudioEnabled((prev) => !prev)}
-            className="p-2 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:text-white"
+            className="p-2 rounded-full bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             title={isAudioEnabled ? t("status.audioOn") : t("status.audioMuted")}
           >
-            {isAudioEnabled ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
+            {isAudioEnabled ? <Volume2 className="w-4 h-4 text-emerald-500" /> : <VolumeX className="w-4 h-4 text-[var(--text-muted)]" />}
           </button>
         </div>
       </header>
@@ -119,25 +119,25 @@ export function PatientStatusPage({ initialTicket, clinicName = "Sunrise Clinic"
       {/* Main Ticket Card */}
       <main className="w-full max-w-md mx-auto space-y-6">
         <div
-          className={`p-6 md:p-8 rounded-3xl border text-center transition-all shadow-2xl relative overflow-hidden ${
+          className={`p-6 md:p-8 rounded-3xl border text-center transition-all shadow-xl relative overflow-hidden ${
             isCalled
-              ? "bg-blue-950/80 border-blue-500/60 shadow-[0_0_35px_rgba(59,130,246,0.3)] animate-pulse"
+              ? "bg-blue-600/15 border-blue-500/60 shadow-[0_0_35px_rgba(59,130,246,0.3)] animate-pulse"
               : isServed
-              ? "bg-emerald-950/60 border-emerald-500/40"
-              : "bg-slate-900/90 border-white/15"
+              ? "bg-emerald-600/15 border-emerald-500/40"
+              : "bg-[var(--bg-card)] border-[var(--border-color)]"
           }`}
         >
-          <span className="text-xs font-bold uppercase tracking-widest text-slate-400 block mb-1">
+          <span className="text-xs font-bold uppercase tracking-widest text-[var(--text-muted)] block mb-1">
             {t("status.yourToken")}
           </span>
-          <div className="text-6xl font-black font-sans text-amber-400 tracking-tight my-2">
+          <div className="text-6xl font-black font-sans text-amber-500 tracking-tight my-2">
             #{ticket.token_number}
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">{ticket.customer_name || t("common.patient")}</h2>
+          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">{ticket.customer_name || t("common.patient")}</h2>
 
           {/* Status Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-black uppercase tracking-wider text-white">
-            <span className={`w-2 h-2 rounded-full ${isCalled ? "bg-blue-400 animate-ping" : isServed ? "bg-emerald-400" : "bg-amber-400"}`} />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs font-black uppercase tracking-wider text-[var(--text-primary)]">
+            <span className={`w-2 h-2 rounded-full ${isCalled ? "bg-blue-500 animate-ping" : isServed ? "bg-emerald-500" : "bg-amber-500"}`} />
             {t(`common.status.${ticket.status}`)}
           </div>
 
@@ -157,44 +157,44 @@ export function PatientStatusPage({ initialTicket, clinicName = "Sunrise Clinic"
         {/* Live Metrics Grid */}
         {!isServed && (
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-5 bg-slate-900/80 border border-white/10 rounded-2xl flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-400 mb-2">
+            <div className="p-5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl flex flex-col justify-between shadow-sm">
+              <div className="flex items-center justify-between text-[var(--text-muted)] mb-2">
                 <span className="text-xs font-bold uppercase tracking-wider">{t("status.position")}</span>
-                <Users className="w-4 h-4 text-blue-400" />
+                <Users className="w-4 h-4 text-blue-500" />
               </div>
-              <div className="text-3xl font-black font-sans text-white">
+              <div className="text-3xl font-black font-sans text-[var(--text-primary)]">
                 {isCalled ? t("status.next") : t("status.inLine", { n: positionInLine })}
               </div>
-              <span className="text-[10px] text-slate-400 font-medium mt-1">{t("status.liveQueueStatus")}</span>
+              <span className="text-[10px] text-[var(--text-muted)] font-medium mt-1">{t("status.liveQueueStatus")}</span>
             </div>
 
-            <div className="p-5 bg-slate-900/80 border border-white/10 rounded-2xl flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-400 mb-2">
+            <div className="p-5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl flex flex-col justify-between shadow-sm">
+              <div className="flex items-center justify-between text-[var(--text-muted)] mb-2">
                 <span className="text-xs font-bold uppercase tracking-wider">{t("status.estWait")}</span>
-                <Clock className="w-4 h-4 text-purple-400" />
+                <Clock className="w-4 h-4 text-purple-500" />
               </div>
-              <div className="text-3xl font-black font-sans text-white">
+              <div className="text-3xl font-black font-sans text-[var(--text-primary)]">
                 {isCalled ? t("status.zeroWait") : t("status.estWaitValue", { n: estWaitMins })}
               </div>
-              <span className="text-[10px] text-slate-400 font-medium mt-1">{t("status.updatedRealtime")}</span>
+              <span className="text-[10px] text-[var(--text-muted)] font-medium mt-1">{t("status.updatedRealtime")}</span>
             </div>
           </div>
         )}
 
         {/* Queue Visualizer Graph */}
-        <div className="bg-slate-900/80 border border-white/10 rounded-3xl p-5 shadow-xl">
-          <h3 className="text-sm font-bold text-white mb-3">{t("status.positionGraph")}</h3>
+        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-5 shadow-sm">
+          <h3 className="text-sm font-bold text-[var(--text-primary)] mb-3">{t("status.positionGraph")}</h3>
           <LiveQueueGraph items={items} />
         </div>
 
         {/* Notification Preferences */}
-        <div className="p-5 bg-slate-900/80 border border-white/10 rounded-3xl space-y-3 text-xs">
-          <div className="flex items-center gap-2 text-slate-300 font-bold">
-            <MessageSquare className="w-4 h-4 text-accent" />
+        <div className="p-5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl space-y-3 text-xs shadow-sm">
+          <div className="flex items-center gap-2 text-[var(--text-primary)] font-bold">
+            <MessageSquare className="w-4 h-4 text-blue-500" />
             <span>{t("status.notificationPrefs")}</span>
           </div>
           <div className="flex items-center justify-between py-1">
-            <span className="text-slate-400">{t("status.whatsappUpdates")}</span>
+            <span className="text-[var(--text-secondary)]">{t("status.whatsappUpdates")}</span>
             <input
               type="checkbox"
               checked={whatsappConsent}

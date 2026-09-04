@@ -53,9 +53,9 @@ export function MagneticButton({
       case 'primary':
         return 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 border border-white/20';
       case 'secondary':
-        return 'bg-white/10 hover:bg-white/15 text-white border border-white/15 backdrop-blur-md shadow-md';
+        return 'bg-[var(--bg-card)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] backdrop-blur-md shadow-md';
       case 'glass':
-        return 'bg-white/5 hover:bg-white/10 text-white/90 border border-white/10 backdrop-blur-sm';
+        return 'bg-[var(--glass-bg)] hover:bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] backdrop-blur-sm';
       default:
         return '';
     }

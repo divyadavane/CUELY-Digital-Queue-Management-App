@@ -26,17 +26,17 @@ export function LogoMarqueeSection() {
           {logos.map((logo, idx) => (
             <div
               key={`${logo.id}-${idx}`}
-              className="flex items-center gap-2.5 px-6 py-3 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/20 transition-all duration-300 transform hover:scale-105 cursor-pointer"
+              className="flex items-center gap-2.5 px-6 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] hover:border-blue-500/30 transition-all duration-300 transform hover:scale-105 cursor-pointer shadow-sm"
               data-cursor="hover"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/20 text-xs font-black text-blue-400 font-mono border border-blue-500/20">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/15 text-xs font-black text-blue-500 font-mono border border-blue-500/20">
                 {logo.logoText[0]}
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-sm font-bold tracking-wider text-white font-mono">
+                <span className="text-sm font-bold tracking-wider text-[var(--text-primary)] font-mono">
                   {logo.logoText}
                 </span>
-                <span className="text-[9px] tracking-widest text-white/50 uppercase font-semibold">
+                <span className="text-[9px] tracking-widest text-[var(--text-secondary)] uppercase font-semibold">
                   {logo.subtext}
                 </span>
               </div>

@@ -61,7 +61,7 @@ export function TelemedicineSection() {
               <span>Telemedicine Built-In</span>
             </div>
 
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-[var(--text-primary)] tracking-tight leading-tight">
               Video Consults,{' '}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400">
                 Zero Dependencies
@@ -80,14 +80,14 @@ export function TelemedicineSection() {
                 return (
                   <div
                     key={idx}
-                    className="flex items-start gap-3 rounded-xl border border-white/8 bg-white/[0.03] p-4 hover:border-violet-500/30 hover:bg-violet-500/5 transition-all duration-300"
+                    className="flex items-start gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4 hover:border-violet-500/30 hover:bg-violet-500/5 transition-all duration-300 shadow-sm"
                   >
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 border border-violet-500/20">
                       <Icon className="h-4 w-4 text-violet-400" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-white mb-1">{item.title}</h4>
-                      <p className="text-xs text-white/50 leading-relaxed">{item.description}</p>
+                      <h4 className="text-sm font-bold text-[var(--text-primary)] mb-1">{item.title}</h4>
+                      <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{item.description}</p>
                     </div>
                   </div>
                 );

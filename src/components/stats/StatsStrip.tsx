@@ -46,8 +46,8 @@ export default function StatsStrip({ servedCount, waitingCount, noShowCount, avg
           <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
       ),
-      color: "text-navy-900",
-      bg: "bg-navy-900/10",
+      color: "text-indigo-500",
+      bg: "bg-indigo-500/10",
     },
     {
       label: "No Shows",
@@ -65,7 +65,7 @@ export default function StatsStrip({ servedCount, waitingCount, noShowCount, avg
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {stats.map((stat) => (
-        <div key={stat.label} className="bg-surface rounded-xl border border-gray-100 shadow-sm p-4">
+        <div key={stat.label} className="bg-surface rounded-xl border border-border shadow-sm p-4">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 ${stat.bg} rounded-lg flex items-center justify-center ${stat.color}`}>
               {stat.icon}

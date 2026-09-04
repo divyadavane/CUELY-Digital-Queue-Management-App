@@ -23,7 +23,7 @@ export function FaqSection() {
             <CuelyLogo size="xs" showGlow />
             <span>Got Questions?</span>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-[var(--text-primary)] tracking-tight">
             Frequently Asked <GradientText>Questions</GradientText>
           </h2>
           <p className="mt-4 text-lg text-[var(--text-secondary)]">
@@ -44,13 +44,13 @@ export function FaqSection() {
                   className="flex w-full items-center justify-between p-6 text-left cursor-pointer"
                   data-cursor="hover"
                 >
-                  <span className="text-lg font-bold text-white pr-4">
+                  <span className="text-lg font-bold text-[var(--text-primary)] pr-4">
                     {faq.question}
                   </span>
                   <motion.div
                     animate={{ rotate: isOpen ? 180 : 0 }}
                     transition={{ duration: 0.3, ease: 'easeInOut' }}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/5 text-white border border-white/10"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)]"
                   >
                     {isOpen ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                   </motion.div>
@@ -65,7 +65,7 @@ export function FaqSection() {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                     >
-                      <div className="px-6 pb-6 pt-0 text-sm text-[var(--text-secondary)] leading-relaxed border-t border-white/5 mt-2 pt-4">
+                      <div className="px-6 pb-6 pt-0 text-sm text-[var(--text-secondary)] leading-relaxed border-t border-[var(--border-color)] mt-2 pt-4">
                         {faq.answer}
                       </div>
                     </motion.div>

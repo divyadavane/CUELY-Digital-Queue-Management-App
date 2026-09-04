@@ -18,7 +18,7 @@ export function TestimonialsSection() {
             <CuelyLogo size="xs" showGlow />
             <span>Customer Stories</span>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-[var(--text-primary)] tracking-tight">
             Loved by Teams <GradientText>Worldwide</GradientText>
           </h2>
           <p className="mt-4 text-lg text-[var(--text-secondary)]">
@@ -48,24 +48,24 @@ export function TestimonialsSection() {
                     </div>
                   </div>
 
-                  <Quote className="h-8 w-8 text-white/20 mb-3" />
+                  <Quote className="h-8 w-8 text-blue-500/30 mb-3" />
 
-                  <p className="text-base text-white/90 leading-relaxed italic font-normal">
+                  <p className="text-base text-[var(--text-primary)] leading-relaxed italic font-normal">
                     "{t.quote}"
                   </p>
                 </div>
 
                 {/* Author Metadata */}
-                <div className="mt-8 pt-4 border-t border-white/10 flex items-center gap-3">
+                <div className="mt-8 pt-4 border-t border-[var(--border-color)] flex items-center gap-3">
                   <img
                     src={t.avatarUrl}
                     alt={t.author}
                     className="h-12 w-12 rounded-full ring-2 ring-cyan-500/30 object-cover"
                   />
                   <div>
-                    <h4 className="text-sm font-bold text-white">{t.author}</h4>
+                    <h4 className="text-sm font-bold text-[var(--text-primary)]">{t.author}</h4>
                     <p className="text-xs text-[var(--text-secondary)]">
-                      {t.role} • <span className="text-blue-400 font-medium">{t.company}</span>
+                      {t.role} • <span className="text-blue-500 font-medium">{t.company}</span>
                     </p>
                   </div>
                 </div>

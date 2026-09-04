@@ -19,8 +19,8 @@ export function AnimatedBackground({ isInterior = false }: AnimatedBackgroundPro
 
   return (
     <div className={`fixed inset-0 z-[-1] pointer-events-none overflow-hidden transition-opacity duration-700 ${baseOpacityClass}`}>
-      {/* Dark Navy Background Base */}
-      <div className="absolute inset-0 bg-[#0F0F23] transition-colors duration-300"></div>
+      {/* Theme Background Base */}
+      <div className="absolute inset-0 bg-[var(--bg-primary)] transition-colors duration-300"></div>
 
       {/* Grid Overlay */}
       <div 
@@ -30,7 +30,7 @@ export function AnimatedBackground({ isInterior = false }: AnimatedBackgroundPro
           backgroundSize: '4rem 4rem',
         }}
       ></div>
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0F0F23]/50 to-[#0F0F23]"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--bg-primary)]/50 to-[var(--bg-primary)]"></div>
 
       {/* Animated Gradient Blobs */}
       <div className={`absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-violet-600 blur-[120px] mix-blend-screen animate-blob-drift-1 ${blobOpacityClass}`}></div>
