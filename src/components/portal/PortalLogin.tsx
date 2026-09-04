@@ -253,7 +253,7 @@ export function PortalLogin() {
                 {t("login.verifyLogin")}
               </button>
 
-              <div className="text-center mt-4">
+              <div className="text-center mt-4 space-y-2">
                 {resendIn > 0 ? (
                   <p className="text-[11px] text-muted-foreground font-medium">
                     {t("login.resendIn", { n: resendIn })}
@@ -266,6 +266,9 @@ export function PortalLogin() {
                     {t("login.resend")} <ArrowRight className="w-3 h-3" />
                   </button>
                 )}
+                <p className="text-[10px] text-muted-foreground/80">
+                  💬 Sent via WhatsApp from <span className="font-mono text-foreground font-semibold">+1 555-196-1447</span>. Check unknown/spam chats if not in inbox.
+                </p>
               </div>
             </div>
           )}
