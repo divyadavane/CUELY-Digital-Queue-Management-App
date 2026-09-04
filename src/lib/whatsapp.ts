@@ -239,7 +239,11 @@ export async function sendOtpWhatsApp(
 
       const resData = await response.json();
       if (!response.ok) {
-        throw new Error(resData?.error?.message || "WhatsApp Meta API Error");
+        const detail = resData?.error?.message || "WhatsApp Meta API Error";
+        if (resData?.error?.code === 131030 || detail.includes("not in allowed list")) {
+          throw new Error("Meta Sandbox: Your phone number must be added to 'Allowed numbers' in Meta Developer Portal (WhatsApp > API Setup)");
+        }
+        throw new Error(detail);
       }
       console.log(`[WhatsApp Meta API] OTP sent to ${formattedPhone}`);
       sentViaService = true; // Mark as successfully sent so we don't try fallback
@@ -248,6 +252,8 @@ export async function sendOtpWhatsApp(
       status = "failed";
       errorMsg = err?.message || "Failed to deliver OTP via WhatsApp";
     }
+  } else {
+    errorMsg = "WhatsApp credentials (WHATSAPP_API_TOKEN / WHATSAPP_PHONE_NUMBER_ID) are not configured in environment variables.";
   }
 
   // 2. Fall back to local service if Meta API was not used or failed
