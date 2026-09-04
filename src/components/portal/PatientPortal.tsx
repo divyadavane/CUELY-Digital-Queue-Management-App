@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useUnreadChatCount } from "@/hooks/useUnreadChatCount";
@@ -56,19 +56,20 @@ export function PatientPortal() {
   const [tab, setTab] = useState<Tab>("dashboard");
   const { unread, refresh: refreshUnread } = useUnreadChatCount({ role: "patient" });
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading && !profile) {
+      clearPortalToken();
+      router.replace("/portal/login");
+    }
+  }, [loading, profile, router]);
+
+  if (loading || !profile) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center gap-4">
         <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs font-semibold text-slate-400">{t("portal.loading")}</p>
+        <p className="text-xs font-semibold text-muted-foreground">{t("portal.loading")}</p>
       </div>
     );
-  }
-
-  if (!profile) {
-    clearPortalToken();
-    router.replace("/portal/login");
-    return null;
   }
 
   const firstName = (profile.name || t("common.patient")).trim().split(" ")[0];
