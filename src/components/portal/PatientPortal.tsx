@@ -19,6 +19,7 @@ import { clearPortalToken } from "@/lib/portal/client";
 import { usePortalSession } from "@/hooks/usePortalSession";
 import { CuelyLogo } from "@/components/ui/CuelyLogo";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { DashboardSection } from "@/components/portal/sections/DashboardSection";
 import { AppointmentsSection } from "@/components/portal/sections/AppointmentsSection";
 import { VisitsSection } from "@/components/portal/sections/VisitsSection";
